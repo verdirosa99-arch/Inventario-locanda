@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario Locanda</title>
+    <!-- Caricamento di Tailwind CSS per lo stile -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Stile per un aspetto più pulito del font */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Aggiungiamo un po' di stile per i pulsanti di stato quando attivi */
+        .status-btn {
+            padding: 8px 12px; /* Aumenta l'area toccabile */
+            font-size: 0.75rem; /* text-xs */
+        }
+        .status-btn.active-yellow {
+            background-color: #fef9c3; /* bg-yellow-100 */
+            color: #713f12; /* text-yellow-800 */
+            border: 1px solid #fde047; /* border-yellow-400 */
+        }
+        .status-btn.active-red {
+            background-color: #fee2e2; /* bg-red-100 */
+            color: #991b1b; /* text-red-800 */
+            border: 1px solid #fca5a5; /* border-red-300 */
+        }
+        /* Aumenta l'area di click per i campi di input modificabili */
+        .edit-field {
+            padding: 0.5rem; /* p-2 */
+            line-height: 1;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4 md:p-10">
+
+    <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-2xl p-4 md:p-6">
+        
+        <!-- Titolo -->
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">
+            Inventario Locanda
+        </h1>
+
+        <!-- Form per Aggiungere Prodotti -->
+        <form id="add-form" class="flex flex-wrap gap-3 mb-6 items-center border-b pb-4">
+            <input 
+                type="text" 
+                id="product-name-input"
+                placeholder="Nome Prodotto"
+                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                required
+            >
+            <input 
+                type="number" 
+                id="product-quantity-input"
+                placeholder="Qty"
+                min="0"
+                class="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            >
+            <input 
+                type="number" 
+                id="product-price-input"
+                placeholder="Prezzo (€)"
+                min="0"
+                step="0.01"
+                class="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            >
+            <button 
+                type="submit"
+                class="bg-blue-600 text-white px-5 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors w-full md:w-auto"
+            >
+                Aggiungi
+            </button>
+        </form>
+
+        <!-- Filtri Vista -->
+        <div class="flex justify-center gap-2 mb-4 p-1 bg-gray-200 rounded-lg">
+            <button id="view-all-btn" class="view-btn flex-1 p-2 rounded-md font-semibold text-sm transition-colors bg-white shadow">
+                Tutto l'inventario
+            </button>
+            <button id="view-shopping-btn" class="view-btn flex-1 p-2 rounded-md font-semibold text-sm transition-colors text-gray-600">
+                Lista Spesa (Scarsa)
+            </button>
+        </div>
+
+        <!-- Contenitore della Lista -->
+        <div id="inventory-list-container" class="pt-2">
+            
+            <!-- Messaggio di Caricamento -->
+            <div id="loading" class="text-center text-gray-500 p-4">
+                Caricamento dell'inventario...
+            </div>
+
+            <!-- Lista dei Prodotti (popolata da JS) -->
+            <div id="inventory-list">
+                <!-- Prodotti qui -->
+            </div>
+
+            <!-- Totale Lista Spesa (visibile solo nella vista shopping) -->
+            <div id="shopping-total" class="mt-4 pt-4 border-t-2 border-dashed border-gray-300 hidden">
+                <div class="flex justify-between items-center text-xl font-bold text-gray-800">
+                    <span>Totale Spesa Stimato:</span>
+                    <span id="total-amount">€ 0.00</span>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">
+                    *Basato sulla quantità e prezzo inseriti.
+                </p>
+            </div>
+        </div>
+
+        <!-- ID Utente per riferimento (importante per il salvataggio) -->
+        <div id="user-id-display" class="mt-6 text-center text-xs text-gray-400">
+            Connessione...
+        </div>
+
+    </div>
+
+    <!-- Firebase SDK (Importazioni Modulo) -->
+    <script type="module">
+        // Importa le funzioni necessarie dai SDK di Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            signInAnonymously, 
+            signInWithCustomToken, 
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            collection, 
+            addDoc, 
+            updateDoc, 
+            deleteDoc, 
+            onSnapshot, 
+            query,
+            setLogLevel
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- Configurazione e Inizializzazione ---
+
+        // Abilita i log di debug per Firestore
+        setLogLevel('Debug');
+
+        // Ottieni l'ID dell'app e la configurazione di Firebase dall'ambiente
+        // Queste variabili (__app_id, __firebase_config) sono fornite dall'ambiente
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+
+        // Inizializza Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Riferimenti alle collezioni e stato utente
+        let userId = null;
+        let inventoryCollectionRef = null;
+        let allProducts = []; // Contiene tutti i prodotti dal db
+        let currentView = 'all'; // 'all' o 'shopping'
+
+        // --- Riferimenti agli Elementi del DOM ---
+        const addForm = document.getElementById('add-form');
+        const productNameInput = document.getElementById('product-name-input');
+        const productQuantityInput = document.getElementById('product-quantity-input');
+        const productPriceInput = document.getElementById('product-price-input');
+        const inventoryList = document.getElementById('inventory-list');
+        const loadingMessage = document.getElementById('loading');
+        const userIdDisplay = document.getElementById('user-id-display');
+        const viewAllBtn = document.getElementById('view-all-btn');
+        const viewShoppingBtn = document.getElementById('view-shopping-btn');
+        const shoppingTotalDiv = document.getElementById('shopping-total');
+        const totalAmountSpan = document.getElementById('total-amount');
+
+        // --- Funzioni Principali dell'App ---
+
+        /**
+         * Imposta l'autenticazione e avvia l'app
+         */
+        async function setupAuthentication() {
+            // Ascolta i cambiamenti dello stato di autenticazione
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    console.log('Utente autenticato:', user.uid);
+                    userId = user.uid;
+                    userIdDisplay.textContent = `ID Utente: ${userId}`;
+                    
+                    // Definisce il percorso del database privato per questo utente
+                    inventoryCollectionRef = collection(db, 'artifacts', appId, 'users', userId, 'inventory');
+                    
+                    // Avvia l'ascolto del database
+                    listenToInventoryChanges();
+                } else {
+                    console.log('Nessun utente autenticato.');
+                    userId = null;
+                    inventoryList.innerHTML = '<p class="text-center text-gray-500">Errore di autenticazione.</p>';
+                }
+            });
+
+            // Esegue l'accesso
+            try {
+                if (typeof __initial_auth_token !== 'undefined') {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Errore durante l'autenticazione:", error);
+                loadingMessage.textContent = "Errore di connessione.";
+            }
+        }
+
+        /**
+         * Si mette in ascolto dei cambiamenti sulla collezione dell'inventario
+         */
+        function listenToInventoryChanges() {
+            if (!inventoryCollectionRef) return;
+
+            loadingMessage.classList.remove('hidden');
+            
+            const q = query(inventoryCollectionRef);
+
+            // onSnapshot apre una connessione real-time
+            onSnapshot(q, (snapshot) => {
+                loadingMessage.classList.add('hidden');
+                
+                allProducts = []; // Resetta la lista
+                snapshot.forEach((doc) => {
+                    allProducts.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Ordina i prodotti in memoria (evitiamo 'orderBy' per problemi di indici)
+                allProducts.sort((a, b) => {
+                    // Mette i prodotti spuntati in fondo
+                    if (a.checked !== b.checked) {
+                        return a.checked ? 1 : -1;
+                    }
+                    // Ordina alfabeticamente per nome
+                    return (a.name || '').localeCompare(b.name || '');
+                });
+
+                // Renderizza la lista filtrata
+                filterAndRender();
+
+            }, (error) => {
+                console.error("Errore nell'ascolto dei dati:", error);
+                loadingMessage.textContent = "Errore nel caricamento dei dati.";
+            });
+        }
+
+        /**
+         * Filtra la lista 'allProducts' base alla 'currentView' e chiama renderInventory
+         */
+        function filterAndRender() {
+            let productsToRender;
+            let totalCost = 0;
+
+            if (currentView === 'shopping') {
+                // Filtra solo i prodotti con 'lowStock'
+                productsToRender = allProducts.filter(p => p.lowStock === true);
+                
+                // Calcola il totale della spesa
+                totalCost = productsToRender.reduce((sum, product) => {
+                    const price = parseFloat(product.price) || 0;
+                    const quantity = parseFloat(product.quantity) || 1;
+                    return sum + (price * quantity);
+                }, 0);
+
+                totalAmountSpan.textContent = `€ ${totalCost.toFixed(2)}`;
+                shoppingTotalDiv.classList.remove('hidden');
+
+            } else {
+                // Mostra tutti i prodotti
+                productsToRender = allProducts;
+                shoppingTotalDiv.classList.add('hidden');
+            }
+
+            renderInventory(productsToRender);
+        }
+
+        /**
+         * Renderizza l'intera lista di prodotti nel DOM
+         */
+        function renderInventory(products) {
+            inventoryList.innerHTML = ''; // Pulisce la lista attuale
+
+            if (products.length === 0) {
+                if (currentView === 'shopping') {
+                    inventoryList.innerHTML = `
+                        <p class="text-center text-gray-500 p-4">
+                            Ottimo! La tua lista della spesa è vuota.
+                        </p>
+                    `;
+                } else {
+                    inventoryList.innerHTML = `
+                        <p class="text-center text-gray-500 p-4">
+                            Nessun prodotto nell'inventario. Aggiungine uno!
+                        </p>
+                    `;
+                }
+                return;
+            }
+
+            products.forEach(product => {
+                const productEl = document.createElement('div');
+                productEl.className = 'product-item p-3 border-b border-gray-100 hover:bg-gray-50 transition-colors';
+                productEl.dataset.id = product.id;
+
+                // Classi dinamiche
+                const nameClass = product.checked ? 'text-lg text-gray-400 line-through' : 'text-lg text-gray-800';
+                const openClass = product.openPackage ? 'status-btn active-yellow' : 'status-btn';
+                const lowClass = product.lowStock ? 'status-btn active-red' : 'status-btn';
+
+                productEl.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3 min-w-0 flex-grow">
+                            <!-- Checkbox -->
+                            <input 
+                                type="checkbox" 
+                                class="product-check h-6 w-6 rounded text-blue-600 focus:ring-blue-500 shrink-0"
+                                ${product.checked ? 'checked' : ''}
+                            >
+                            <!-- Nome Prodotto (con wrap) -->
+                            <span class="${nameClass} font-medium text-base md:text-lg truncate" title="${product.name}">
+                                ${product.name || 'Senza nome'}
+                            </span>
+                        </div>
+                        <!-- Bottone Elimina -->
+                        <button 
+                            class="delete-btn text-red-400 hover:text-red-600 font-bold text-xl px-3 py-1 rounded-full hover:bg-red-100 transition-colors shrink-0 ml-2"
+                            title="Elimina ${product.name}"
+                        >
+                            &times;
+                        </button>
+                    </div>
+                    
+                    <div class="flex flex-wrap items-center gap-2 mt-2 pl-9 md:pl-10">
+                        
+                        <!-- Quantità -->
+                        <div class="flex items-center gap-1">
+                            <label for="qty-${product.id}" class="text-xs text-gray-500">Qty:</label>
+                            <input 
+                                type="number" 
+                                id="qty-${product.id}"
+                                class="edit-field w-16 p-1 border border-gray-200 rounded-md text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                value="${product.quantity || 0}"
+                                min="0"
+                                data-field="quantity"
+                            >
+                        </div>
+                        
+                        <!-- Prezzo -->
+                        <div class="flex items-center gap-1">
+                            <label for="price-${product.id}" class="text-xs text-gray-500">Prezzo (€):</label>
+                            <input 
+                                type="number" 
+                                id="price-${product.id}"
+                                class="edit-field w-20 p-1 border border-gray-200 rounded-md text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                value="${(product.price || 0).toFixed(2)}"
+                                min="0"
+                                step="0.01"
+                                data-field="price"
+                            >
+                        </div>
+
+                        <!-- Bottone Aperta -->
+                        <button 
+                            class="${openClass} rounded-full border font-semibold ml-auto"
+                            data-field="openPackage"
+                            data-value="${product.openPackage || false}"
+                        >
+                            Aperta
+                        </button>
+                        <!-- Bottone Scarsa -->
+                        <button 
+                            class="${lowClass} rounded-full border font-semibold"
+                            data-field="lowStock"
+                            data-value="${product.lowStock || false}"
+                        >
+                            Scarsa
+                        </button>
+                    </div>
+                `;
+                inventoryList.appendChild(productEl);
+            });
+        }
+
+        /**
+         * Gestisce l'invio del form per aggiungere un prodotto
+         */
+        async function handleAddProduct(e) {
+            e.preventDefault();
+            const productName = productNameInput.value.trim();
+            // Assicura che la quantità e il prezzo siano numeri validi, altrimenti usa 1 e 0
+            const quantity = Math.max(1, parseFloat(productQuantityInput.value) || 1); 
+            const price = parseFloat(productPriceInput.value) || 0; 
+
+            if (!productName || !inventoryCollectionRef) {
+                return;
+            }
+
+            const newProduct = {
+                name: productName,
+                quantity: quantity,
+                price: price,
+                checked: false,
+                openPackage: false,
+                lowStock: false,
+                createdAt: new Date() // Opzionale, per tracciamento
+            };
+
+            try {
+                await addDoc(inventoryCollectionRef, newProduct);
+                productNameInput.value = ''; // Pulisce gli input solo dopo il successo
+                productQuantityInput.value = '1';
+                productPriceInput.value = '0.00';
+                productNameInput.focus();
+            } catch (error) {
+                console.error("Errore nell'aggiungere il prodotto: ", error);
+            }
+        }
+
+        /**
+         * Gestisce i click sulla lista prodotti (event delegation)
+         */
+        function handleListClick(e) {
+            const target = e.target;
+            const productItem = target.closest('.product-item');
+            if (!productItem) return; // Click fuori da un item
+
+            const productId = productItem.dataset.id;
+            const docRef = doc(db, inventoryCollectionRef.path, productId);
+
+            try {
+                // Click sul pulsante ELIMINA
+                if (target.classList.contains('delete-btn')) {
+                    // Rimosso il 'confirm' per compatibilità
+                    deleteDoc(docRef);
+                }
+                // Click sul CHECKBOX
+                else if (target.classList.contains('product-check')) {
+                    const isChecked = target.checked;
+                    updateDoc(docRef, { checked: isChecked });
+                }
+                // Click su un pulsante STATO (Aperta/Scarsa)
+                else if (target.classList.contains('status-btn')) {
+                    const field = target.dataset.field; // "openPackage" o "lowStock"
+                    const currentValue = target.dataset.value === 'true';
+                    
+                    updateDoc(docRef, { [field]: !currentValue });
+                }
+            } catch (error) {
+                 console.error("Errore nell'aggiornare il prodotto:", error);
+            }
+        }
+
+        /**
+         * Gestisce la modifica dei campi Quantità e Prezzo
+         */
+        async function handleFieldChange(e) {
+            const target = e.target;
+            
+            // Controlla se l'evento proviene da un campo di modifica
+            if (!target.classList.contains('edit-field')) {
+                return;
+            }
+
+            const productItem = target.closest('.product-item');
+            if (!productItem) return;
+
+            const productId = productItem.dataset.id;
+            const docRef = doc(db, inventoryCollectionRef.path, productId);
+            const field = target.dataset.field; // "quantity" o "price"
+            let newValue = parseFloat(target.value);
+
+            if (isNaN(newValue)) {
+                console.warn("Valore non valido inserito");
+                // Reset del valore all'ultimo valore noto (non ideale senza stato locale, ma meglio di niente)
+                return; 
+            }
+            
+            if (field === 'quantity') {
+                newValue = Math.max(0, Math.round(newValue)); // Assicura che la quantità sia un intero non negativo
+            } else if (field === 'price') {
+                newValue = Math.max(0, parseFloat(newValue.toFixed(2))); // Assicura 2 decimali e non negativo
+            }
+            
+            // Aggiorna il valore nell'input per riflettere le correzioni (es. da 1.111 a 1.11)
+            target.value = newValue;
+
+
+            try {
+                await updateDoc(docRef, { [field]: newValue });
+                console.log(`Aggiornato ${field} a ${newValue} per ${productId}`);
+            } catch (error) {
+                console.error("Errore nell'aggiornare il campo:", error);
+            }
+        }
+
+        /**
+         * Aggiorna lo stile dei bottoni della vista
+         */
+        function updateViewButtons() {
+            if (currentView === 'all') {
+                viewAllBtn.classList.add('bg-white', 'shadow');
+                viewAllBtn.classList.remove('text-gray-600');
+                
+                viewShoppingBtn.classList.add('text-gray-600');
+                viewShoppingBtn.classList.remove('bg-white', 'shadow');
+            } else {
+                viewShoppingBtn.classList.add('bg-white', 'shadow');
+                viewShoppingBtn.classList.remove('text-gray-600');
+                
+                viewAllBtn.classList.add('text-gray-600');
+                viewAllBtn.classList.remove('bg-white', 'shadow');
+            }
+        }
+
+        // --- Event Listeners ---
+        
+        // Avvia l'autenticazione quando il DOM è pronto
+        document.addEventListener('DOMContentLoaded', setupAuthentication);
+        
+        // Listener per il form di aggiunta
+        addForm.addEventListener('submit', handleAddProduct);
+
+        // Listener centralizzato per la lista (gestisce check, stato, elimina)
+        inventoryList.addEventListener('click', handleListClick);
+
+        // Listener per i campi Quantità e Prezzo (usa 'change' per salvare)
+        // 'change' è meglio di 'input' per non spammare il DB a ogni tasto premuto
+        inventoryList.addEventListener('change', handleFieldChange);
+
+        // Listener per i bottoni della vista
+        viewAllBtn.addEventListener('click', () => {
+            currentView = 'all';
+            updateViewButtons();
+            filterAndRender();
+        });
+
+        viewShoppingBtn.addEventListener('click', () => {
+            currentView = 'shopping';
+            updateViewButtons();
+            filterAndRender();
+        });
+
+    </script>
+
+</body>
+</html>
