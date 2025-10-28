@@ -145,8 +145,12 @@
 
         // Ottieni l'ID dell'app e la configurazione di Firebase dall'ambiente
         // Queste variabili (__app_id, __firebase_config) sono fornite dall'ambiente
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        // Definisce appId e firebaseConfig con valori di default se non definiti dall'ambiente.
+const appId = 'inventario-locanda-app'; // Usa un ID fisso per l'app su GitHub
+const firebaseConfig = { 
+    // Questa configurazione deve essere vuota o avere una tua configurazione valida, 
+    // ma la lasciamo vuota per affidarci all'autenticazione anonima del Canvas
+}; 
 
         // Inizializza Firebase
         const app = initializeApp(firebaseConfig);
@@ -183,9 +187,11 @@
                 if (user) {
                     console.log('Utente autenticato:', user.uid);
                     userId = user.uid;
-                    userIdDisplay.textContent = `ID Utente: ${userId}`;
+                    // Mostra solo una parte dell'ID per brevità, l'UID completo è in console
+                    userIdDisplay.textContent = `ID Utente: ${userId.substring(0, 8)}... (Controlla Console per ID completo)`;
                     
                     // Definisce il percorso del database privato per questo utente
+                    // Per usare l'app da un dominio esterno, deve usare il proprio ID utente
                     inventoryCollectionRef = collection(db, 'artifacts', appId, 'users', userId, 'inventory');
                     
                     // Avvia l'ascolto del database
@@ -197,16 +203,20 @@
                 }
             });
 
-            // Esegue l'accesso
+            // Esegue l'accesso.
             try {
+                // Controlla se il token è definito (solo nell'ambiente Gemini)
                 if (typeof __initial_auth_token !== 'undefined') {
+                    // Accedi con il token personalizzato (modalità Gemini)
                     await signInWithCustomToken(auth, __initial_auth_token);
                 } else {
+                    // Accedi in modo anonimo (modalità Web App Pubblicata)
+                    // Questo garantisce che l'app funzioni su GitHub Pages e mantenga i dati.
                     await signInAnonymously(auth);
                 }
             } catch (error) {
-                console.error("Errore durante l'autenticazione:", error);
-                loadingMessage.textContent = "Errore di connessione.";
+                console.error("Errore durante l'autenticazione. Controlla le regole di sicurezza di Firestore.", error);
+                loadingMessage.textContent = "Errore di connessione. Vedi console.";
             }
         }
 
@@ -548,3 +558,4 @@
 
 </body>
 </html>
+
