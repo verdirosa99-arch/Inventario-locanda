@@ -154,11 +154,27 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M7 16h10" />
               </svg>
               <div class="text-left">
-                <span class="text-xl font-semibold text-white">Carica/Aggiorna da CSV</span>
+                <!-- TESTO MODIFICATO -->
+                <span class="text-xl font-semibold text-white">Importa CSV Inventario</span>
                 <p class="text-sm text-gray-300 mt-1">Carica un file .csv con 'nome', 'categoria', 'fornitore'. Evita duplicati.</p>
               </div>
             </button>
             <input type="file" id="csv-file-input" accept=".csv" class="hidden">
+          </div>
+
+          <!-- NUOVO: Bottone Carica CSV Vini -->
+          <div class="md:col-span-3 mt-4">
+             <button id="btn-show-csv-upload-vini" class="flex w-full items-center justify-center bg-purple-600 text-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center dark:bg-purple-700 dark:hover:shadow-lg dark:hover:shadow-gray-600/50">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-100 mb-3 md:mb-0 md:mr-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-4-4V7a4 4 0 014-4h10a4 4 0 014 4v5a4 4 0 01-4 4H7zM7 16V7m0 9v5m0-5h10m0 0v5m0-5V7" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 16h10" />
+              </svg>
+              <div class="text-left">
+                <span class="text-xl font-semibold text-white">Importa CSV Vini</span>
+                <p class="text-sm text-gray-300 mt-1">Carica un file .csv con 'nome', 'anno', 'cantina', 'regione', 'costo', 'vendita', 'quantita'.</p>
+              </div>
+            </button>
+            <input type="file" id="csv-file-input-vini" accept=".csv" class="hidden">
           </div>
 
           <!-- Bottone Esporta CSV (NUOVO) -->
@@ -555,6 +571,8 @@
         goCantina: document.getElementById('btn-go-cantina'), // NUOVO
         showCsvUpload: document.getElementById('btn-show-csv-upload'),
         csvFileInput: document.getElementById('csv-file-input'),
+        showCsvUploadVini: document.getElementById('btn-show-csv-upload-vini'), // NUOVO
+        csvFileInputVini: document.getElementById('csv-file-input-vini'), // NUOVO
         btnExportCsv: document.getElementById('btn-export-csv'), // NUOVO
       },
       inventario: {
@@ -744,6 +762,10 @@
       dom.home.showCsvUpload.addEventListener('click', () => dom.home.csvFileInput.click());
       dom.home.csvFileInput.addEventListener('change', handleCsvUpload);
       dom.home.btnExportCsv.addEventListener('click', handleExportCSV); // NUOVO
+      
+      // NUOVI LISTENER PER CSV VINI
+      dom.home.showCsvUploadVini.addEventListener('click', () => dom.home.csvFileInputVini.click());
+      dom.home.csvFileInputVini.addEventListener('change', handleWineCsvUpload);
 
       // Ricerca
       dom.inventario.searchBar.addEventListener('input', (e) => {
@@ -1912,6 +1934,88 @@
     }
 
     /**
+     * NUOVO: Gestisce il caricamento e il parsing di un file CSV per i VINI.
+     */
+    async function handleWineCsvUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      dom.loadingOverlay.style.display = 'flex'; // Mostra caricamento
+
+      try {
+        const csvText = await file.text();
+        const { headers, data } = parseCSV(csvText);
+
+        // Cerca gli indici delle colonne necessarie per i vini
+        const nomeIndex = headers.findIndex(h => h.toLowerCase().trim() === 'nome');
+        const annoIndex = headers.findIndex(h => h.toLowerCase().trim() === 'anno');
+        const cantinaIndex = headers.findIndex(h => h.toLowerCase().trim() === 'cantina');
+        const regioneIndex = headers.findIndex(h => h.toLowerCase().trim() === 'regione');
+        const costoIndex = headers.findIndex(h => h.toLowerCase().trim() === 'costo');
+        const venditaIndex = headers.findIndex(h => h.toLowerCase().trim() === 'vendita');
+        const quantitaIndex = headers.findIndex(h => h.toLowerCase().trim() === 'quantita');
+
+        if (nomeIndex === -1 || annoIndex === -1 || costoIndex === -1 || venditaIndex === -1 || quantitaIndex === -1) {
+          throw new Error("File CSV non valido. Assicurati che contenga almeno 'nome', 'anno', 'costo', 'vendita', 'quantita'.");
+        }
+        
+        // Controlla i duplicati (basato sui vini esistenti)
+        const existingNamesLower = state.vini.map(v => v.nome.toLowerCase());
+        
+        const winesToAdd = [];
+        let skipped = 0;
+
+        data.forEach(row => {
+          const nome = row[nomeIndex];
+          if (nome) {
+            const nomeLower = nome.toLowerCase();
+            if (!existingNamesLower.includes(nomeLower)) {
+              // Vino nuovo, aggiungi alla lista
+              winesToAdd.push({
+                nome: nome,
+                anno: parseInt(row[annoIndex]) || 1900,
+                cantina: row[cantinaIndex] || '',
+                regione: row[regioneIndex] || '',
+                costo: parseFloat(row[costoIndex]) || 0,
+                vendita: parseFloat(row[venditaIndex]) || 0,
+                quantita: parseInt(row[quantitaIndex]) || 0,
+              });
+              // Aggiungi subito all'elenco per evitare duplicati nello stesso file
+              existingNamesLower.push(nomeLower); 
+            } else {
+              skipped++; // Vino duplicato, salta
+            }
+          }
+        });
+
+        // Esegui il caricamento massivo (Batch Write)
+        if (winesToAdd.length > 0) {
+          const batch = writeBatch(db);
+          // Salva nella collezione VINI
+          const winesCollectionRef = collection(db, "inventari", GRUPPO_ID, "vini");
+          
+          winesToAdd.forEach(wine => {
+            const newDocRef = doc(winesCollectionRef); // Crea un nuovo ID
+            batch.set(newDocRef, wine);
+          });
+          
+          await batch.commit();
+        }
+        
+        showCustomAlert('Importazione Vini Completata', 
+          `Vini nuovi aggiunti: ${winesToAdd.length}. Vini duplicati saltati: ${skipped}.`, 
+          'success');
+
+      } catch (error) {
+        console.error("Errore importazione CSV Vini: ", error);
+        showCustomAlert('Errore Importazione Vini', error.message, 'error');
+      } finally {
+        dom.loadingOverlay.style.display = 'none'; // Nascondi caricamento
+        event.target.value = null; // Resetta l'input file
+      }
+    }
+
+    /**
      * NUOVA: Esporta l'inventario corrente in un file CSV.
      */
     function handleExportCSV() {
@@ -2084,6 +2188,7 @@
 
 </body>
 </html>
+
 
 
 
