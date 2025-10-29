@@ -131,7 +131,8 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
             </svg>
-            <span>Carica File CSV (One-Time)</span>
+            <!-- MODIFICA: Testo del pulsante aggiornato -->
+            <span>Carica/Aggiorna da CSV</span>
           </label>
           <input type="file" id="csv-file-input" class="hidden" accept=".csv">
           <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
@@ -205,6 +206,9 @@
       </div>
       
       <!-- VISTA: Report Costi -->
+      <!-- ========================================================== -->
+      <!-- ===== CORREZIONE: Questo blocco era stato eliminato ===== -->
+      <!-- ========================================================== -->
       <div id="view-costi" class="hidden">
         <div class="bg-white p-4 md:p-6 rounded-lg shadow-md dark:bg-gray-800">
           <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6 dark:text-gray-100">Report Valore Inventario</h2>
@@ -1063,7 +1067,7 @@
            return;
         }
 
-        if (!confirm(`Trovati ${prodottiDaImportare.length} prodotti. Vuoi importarli ora? (Questa operazione è da fare una sola volta)`)) {
+        if (!confirm(`Trovati ${prodottiDaImportare.length} prodotti. Vuoi importarli ora? L'operazione controllerà i duplicati.`)) {
            loadingOverlay.classList.add('hidden');
            csvFileInput.value = ''; // Resetta l'input
            return;
@@ -1118,36 +1122,69 @@
      * Esegue il loop di caricamento su Firebase
      */
     async function importaProdottiDaCsv(prodottiDaImportare) {
-      loadingText.textContent = `Importazione di ${prodottiDaImportare.length} prodotti...`;
-      let count = 0;
+      loadingText.textContent = `Controllo ${prodottiDaImportare.length} prodotti...`;
+      
+      // 1. Crea un Set dei nomi dei prodotti ESISTENTI per un controllo rapido
+      // Si usa toLowerCase() e trim() per un confronto più robusto
+      const existingProductNames = new Set(
+        state.products.map(p => p.nome.toLowerCase().trim())
+      );
+
+      let prodottiAggiunti = 0;
+      let prodottiSaltati = 0;
+
       for (const item of prodottiDaImportare) {
-        const prodottoCompleto = {
-          nome: item.nome,
-          categoria: item.categoria,
-          fornitore: item.fornitore,
-          costoUnita: 0,
-          quantitaAttuale: 0,
-          quantitaMinima: 1, // Default
-          unita: 'pz', // Default
-          status: 'disponibile', // Default
-          forceToLista: false
-        };
+        // Pulisce i campi prima del controllo
+        const nomeProdottoCsv = item.nome ? item.nome.toLowerCase().trim() : '';
+        const categoriaCsv = item.categoria ? item.categoria.trim() : 'Sconosciuto';
+        const fornitoreCsv = item.fornitore ? item.fornitore.trim() : 'Sconosciuto';
         
-        try {
-          await addDoc(state.collectionRef, prodottoCompleto);
-          count++;
-          loadingText.textContent = `Importazione... (${count}/${prodottiDaImportare.length})`;
-        } catch (err) {
-          console.error("Errore importando prodotto: ", item.nome, err);
+        if (!nomeProdottoCsv) {
+          console.log("Prodotto saltato (nome vuoto):", item);
+          continue; // Salta righe senza nome
         }
+
+        // 2. Controlla se il prodotto esiste GIÀ
+        if (existingProductNames.has(nomeProdottoCsv)) {
+          prodottiSaltati++;
+          // Opzionale: log in console per il debug
+          // console.log(`Prodotto saltato (duplicato): ${item.nome}`);
+        } else {
+          // 3. Se NON esiste, è un nuovo prodotto. Lo aggiungiamo.
+          const prodottoCompleto = {
+            nome: item.nome.trim(), // Salva il nome originale, non in minuscolo
+            categoria: categoriaCsv,
+            fornitore: fornitoreCsv,
+            costoUnita: 0,
+            quantitaAttuale: 0,
+            quantitaMinima: 1, // Default
+            unita: 'pz', // Default
+            status: 'disponibile', // Default
+            forceToLista: false
+          };
+          
+          try {
+            await addDoc(state.collectionRef, prodottoCompleto);
+            prodottiAggiunti++;
+            // Aggiungilo al Set per evitare doppi nel *medesimo file CSV*
+            existingProductNames.add(nomeProdottoCsv); 
+          } catch (err) {
+            console.error("Errore importando prodotto: ", item.nome, err);
+          }
+        }
+        
+        // Aggiorna il testo del caricamento
+        loadingText.textContent = `Aggiunti: ${prodottiAggiunti} / Saltati: ${prodottiSaltati}`;
       }
       
-      loadingText.textContent = `Importazione completata! ${count} prodotti aggiunti.`;
+      // 4. Report finale
+      loadingText.textContent = `Importazione completata!`;
+      alert(`Importazione completata!\n\nProdotti nuovi aggiunti: ${prodottiAggiunti}\nProdotti duplicati saltati: ${prodottiSaltati}`);
+      
       setTimeout(() => {
-        // Il listener onSnapshot aggiornerà automaticamente la UI e nasconderà il loader
-        // (Nascondiamo comunque il loader per sicurezza, nel caso onSnapshot non scatti)
         loadingOverlay.classList.add('hidden');
-      }, 2000);
+        loadingText.textContent = 'Caricamento dati...'; // Resetta per il futuro
+      }, 2500);
     }
     
     // MODIFICA: Aggiungi listener per il nuovo input file
@@ -1179,12 +1216,8 @@
              loadingOverlay.classList.add('hidden');
           }
           
-          // MODIFICA: Controlla se mostrare il pulsante di importazione CSV
-          if (state.products.length === 0) {
-            importContainer.classList.remove('hidden');
-          } else {
-            importContainer.classList.add('hidden');
-          }
+          // MODIFICA: Il pulsante di importazione CSV è sempre visibile
+          importContainer.classList.remove('hidden');
           
           render(); // Ridisegna tutto con i nuovi dati
         }, (error) => {
