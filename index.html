@@ -91,6 +91,11 @@
           <span id="shopping-list-badge" class="ml-2 bg-red-500 text-white text-xs font-bold rounded-full px-2 py-1 hidden">
           </span>
         </button>
+        <!-- NUOVO: Pulsante Navigazione Cantina Aggiunto -->
+        <button id="nav-cantina"
+          class="px-3 py-2 md:px-4 text-sm md:text-base rounded-lg font-semibold shadow-md transition-all duration-200 bg-white text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+          Cantina Vini
+        </button>
       </nav>
     </header>
 
@@ -100,7 +105,8 @@
       <!-- VISTA: Home -->
       <div id="view-home">
         <h2 class="text-2xl font-semibold text-gray-700 mb-6 dark:text-gray-200">Menu Principale</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- MODIFICATO: grid-cols-2 per un layout bilanciato -->
+        <div class="grid grid-cols-2 md:grid-cols-2 gap-4">
           <!-- Bottone Inventario -->
           <button id="btn-go-inventario" class="flex flex-col items-center justify-center bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center dark:bg-gray-800 dark:hover:shadow-lg dark:hover:shadow-gray-700/50">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-blue-600 dark:text-blue-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -128,6 +134,18 @@
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Visualizza valore inventario</p>
           </button>
 
+          <!-- NUOVO: Bottone Cantina Vini -->
+          <button id="btn-go-cantina" class="flex flex-col items-center justify-center bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center dark:bg-gray-800 dark:hover:shadow-lg dark:hover:shadow-gray-700/50">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-purple-600 dark:text-purple-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h6m-6 4h6m-6 4h6" />
+            </svg>
+            <span class="text-xl font-semibold text-gray-800 dark:text-gray-100">Cantina Vini</span>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Gestisci la tua cantina</p>
+          </button>
+        </div>
+
+        <!-- Bottoni CSV (rimangono full-width) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <!-- Bottone Carica CSV -->
           <div class="md:col-span-3 mt-4">
              <button id="btn-show-csv-upload" class="flex w-full items-center justify-center bg-gray-600 text-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center dark:bg-gray-700 dark:hover:shadow-lg dark:hover:shadow-gray-600/50">
@@ -232,7 +250,7 @@
         </div>
       </div>
 
-      <!-- VISTA: Lista Spesa -->
+      <!-- VISTA: Lista Spesa (RIPRISTINATA) -->
       <div id="view-listaSpesa" class="hidden">
         <div class="bg-white p-4 md:p-6 rounded-lg shadow-md dark:bg-gray-800">
           <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
@@ -251,7 +269,7 @@
         </div>
       </div>
       
-      <!-- VISTA: Report Costi -->
+      <!-- VISTA: Report Costi (RIPRISTINATA) -->
       <div id="view-costi" class="hidden">
         <div class="bg-white p-4 md:p-6 rounded-lg shadow-md dark:bg-gray-800">
           <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6 dark:text-gray-100">Report Valore Inventario</h2>
@@ -260,13 +278,45 @@
           </div>
         </div>
       </div>
+
+      <!-- NUOVA VISTA: Cantina Vini -->
+      <div id="view-cantina" class="hidden">
+        <div class="space-y-6">
+
+          <!-- Barra di Ricerca Vini -->
+          <div class="relative">
+            <input type="text" id="search-bar-vini" placeholder="Cerca per nome, anno, cantina, regione..." class="w-full px-4 py-3 pr-10 rounded-lg shadow-md border border-transparent focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-gray-100">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 absolute top-1/2 right-3 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+
+          <!-- Lista Vini (Layout a Griglia) -->
+          <div id="wine-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Contenuto generato da JS -->
+            <p id="no-wines-message" class="text-center text-gray-500 dark:text-gray-400 py-10 text-lg hidden md:col-span-2 lg:col-span-3">
+              Nessun vino nella cantina.
+            </p>
+            <p id="no-search-results-wines-message" class="text-center text-gray-500 dark:text-gray-400 py-10 text-lg hidden md:col-span-2 lg:col-span-3">
+              Nessun vino trovato.
+            </p>
+          </div>
+        </div>
+      </div>
       
     </main>
 
   </div>
 
-  <!-- ================== Pulsante Flottante + ================== -->
+  <!-- ================== Pulsante Flottante + (Inventario) ================== -->
   <button id="open-form-modal-btn" class="fixed bottom-6 right-6 md:bottom-10 md:right-10 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-all duration-200 z-30">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+    </svg>
+  </button>
+
+  <!-- ================== NUOVO Pulsante Flottante + (Cantina) ================== -->
+  <button id="open-wine-modal-btn" class="fixed bottom-6 right-6 md:bottom-10 md:right-10 bg-purple-600 text-white p-4 rounded-full shadow-lg hover:bg-purple-700 transition-all duration-200 z-30 hidden">
     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
       <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
     </svg>
@@ -357,10 +407,74 @@
     </div>
   </div>
 
+  <!-- ================== NUOVO Modale Form Aggiungi Vino ================== -->
+  <div id="wine-modal-overlay" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-40 hidden">
+    
+    <!-- Contenuto Modale -->
+    <div class="bg-white p-4 md:p-6 rounded-lg shadow-md w-full max-w-2xl relative max-h-[90vh] overflow-y-auto dark:bg-gray-800">
+      
+      <!-- Pulsante Chiudi Modale -->
+      <button id="close-wine-modal-btn" class="absolute top-3 right-4 text-gray-400 hover:text-gray-600 z-10 dark:hover:text-gray-200">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <!-- Form Aggiungi Vino -->
+      <h2 class="text-xl md:text-2xl font-semibold mb-4 text-gray-700 dark:text-gray-200">Aggiungi Nuovo Vino</h2>
+      
+      <form id="add-wine-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        <div class="flex flex-col md:col-span-2">
+          <label class="mb-1 font-medium text-gray-600 dark:text-gray-300">Nome Vino (Etichetta)</label>
+          <input type="text" id="new-vino-nome" class="border rounded-md p-2 w-full shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" required>
+        </div>
+        
+        <!-- NUOVI CAMPI -->
+        <div class="flex flex-col">
+          <label class="mb-1 font-medium text-gray-600 dark:text-gray-300">Cantina (Produttore)</label>
+          <input type="text" id="new-vino-cantina" class="border rounded-md p-2 w-full shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" placeholder="Es. Gaja">
+        </div>
+        <div class="flex flex-col">
+          <label class="mb-1 font-medium text-gray-600 dark:text-gray-300">Regione</label>
+          <input type="text" id="new-vino-regione" class="border rounded-md p-2 w-full shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" placeholder="Es. Piemonte">
+        </div>
+        <!-- FINE NUOVI CAMPI -->
+
+        <div class="flex flex-col">
+          <label class="mb-1 font-medium text-gray-600 dark:text-gray-300">Anno</label>
+          <input type="number" id="new-vino-anno" min="1900" max="2100" step="1" class="border rounded-md p-2 w-full shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" placeholder="Es. 2020" required>
+        </div>
+
+        <div class="flex flex-col">
+          <label class="mb-1 font-medium text-gray-600 dark:text-gray-300">Quantità (Bottiglie)</label>
+          <input type="number" id="new-vino-quantita" min="0" step="1" class="border rounded-md p-2 w-full shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" placeholder="0" required>
+        </div>
+        
+        <div class="flex flex-col">
+          <label class="mb-1 font-medium text-gray-600 dark:text-gray-300">Costo Acquisto (€)</label>
+          <input type="number" id="new-vino-costo" min="0" step="0.01" class="border rounded-md p-2 w-full shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" placeholder="0.00" required>
+        </div>
+
+        <div class="flex flex-col">
+          <label class="mb-1 font-medium text-gray-600 dark:text-gray-300">Prezzo Vendita (€)</label>
+          <input type="number" id="new-vino-vendita" min="0" step="0.01" class="border rounded-md p-2 w-full shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" placeholder="0.00" required>
+        </div>
+
+        <!-- Pulsante Submit -->
+        <div class="md:col-span-2 flex justify-end mt-4">
+          <button type="submit" class="bg-purple-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-purple-700 transition-all duration-200 font-semibold">
+            Aggiungi Vino
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
 
   <!-- ================== Inizio Script JS ================== -->
   <script type="module">
-    // --- VERSIONE SCRIPT: 2.2 (con fix decimali, zoom, sort, export) ---
+    // --- VERSIONE SCRIPT: 2.3 (con Cantina Vini) ---
 
     // 2. Importa le funzioni di Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
@@ -392,16 +506,19 @@
     // --- Variabili Globali ---
     let db, auth;
     let unsubscribeProducts = null; // Funzione per staccare il listener
+    let unsubscribeWines = null; // NUOVO: Listener per i vini
     let currentUserId = null; // UID dell'utente anonimo
 
     // Stato dell'applicazione
     const state = {
       products: [],         // Array di tutti i prodotti
-      view: 'home',         // 'home', 'inventario', 'listaSpesa', 'costi'
+      vini: [],             // NUOVO: Array di tutti i vini
+      view: 'home',         // 'home', 'inventario', 'listaSpesa', 'costi', 'cantina'
       groupBy: 'categoria', // 'categoria' (rimosso fornitore)
       inventoryView: 'compatta', // 'compatta', 'completa'
       shoppingListManual: {}, // Prodotti aggiunti/rimossi manually { id: 'add'/'remove' }
       searchTerm: '',         // Termine di ricerca
+      searchTermVini: '',   // NUOVO: Termine di ricerca per i vini
       sortBy: 'nome-asc',   // NUOVO: Criterio di ordinamento
     };
 
@@ -420,6 +537,7 @@
         navTabs: document.getElementById('main-nav-tabs'),
         navInventario: document.getElementById('nav-inventario'),
         navListaSpesa: document.getElementById('nav-listaSpesa'),
+        navCantina: document.getElementById('nav-cantina'), // NUOVO
         shoppingListBadge: document.getElementById('shopping-list-badge'),
         // themeToggle RIMOSSO
       },
@@ -428,11 +546,13 @@
         inventario: document.getElementById('view-inventario'),
         listaSpesa: document.getElementById('view-listaSpesa'),
         costi: document.getElementById('view-costi'),
+        cantina: document.getElementById('view-cantina'), // NUOVO
       },
       home: {
         goInventario: document.getElementById('btn-go-inventario'),
         goListaSpesa: document.getElementById('btn-go-listaspesa'),
         goCosti: document.getElementById('btn-go-costi'),
+        goCantina: document.getElementById('btn-go-cantina'), // NUOVO
         showCsvUpload: document.getElementById('btn-show-csv-upload'),
         csvFileInput: document.getElementById('csv-file-input'),
         btnExportCsv: document.getElementById('btn-export-csv'), // NUOVO
@@ -447,6 +567,13 @@
         listContainer: document.getElementById('inventory-list-container'),
         noProductsMsg: document.getElementById('no-products-message'),
         noSearchResultsMsg: document.getElementById('no-search-results-message'),
+      },
+      // NUOVO: Selettori Cantina
+      cantina: {
+        searchBar: document.getElementById('search-bar-vini'),
+        listContainer: document.getElementById('wine-list-container'),
+        noWinesMsg: document.getElementById('no-wines-message'),
+        noSearchResultsWinesMsg: document.getElementById('no-search-results-wines-message'),
       },
       listaSpesa: {
         copyBtn: document.getElementById('copy-shopping-list-btn'),
@@ -470,9 +597,25 @@
           quantitaMinima: document.getElementById('new-quantitaMinima'),
           stato: document.getElementById('new-stato'),
         }
+      },
+      // NUOVO: Selettori Modale Vini
+      wineModal: {
+        overlay: document.getElementById('wine-modal-overlay'),
+        openBtn: document.getElementById('open-wine-modal-btn'),
+        closeBtn: document.getElementById('close-wine-modal-btn'),
+        form: document.getElementById('add-wine-form'),
+        inputs: {
+          nome: document.getElementById('new-vino-nome'),
+          anno: document.getElementById('new-vino-anno'),
+          quantita: document.getElementById('new-vino-quantita'),
+          costo: document.getElementById('new-vino-costo'),
+          vendita: document.getElementById('new-vino-vendita'),
+          // NUOVI
+          cantina: document.getElementById('new-vino-cantina'),
+          regione: document.getElementById('new-vino-regione'),
+        }
       }
     };
-
 
     // --- FUNZIONI DI INIZIALIZZAZIONE ---
 
@@ -491,7 +634,8 @@
           if (user) {
             // Utente già loggato
             currentUserId = user.uid;
-            attachProductsListener(); // Avvia l'ascolto dei dati
+            attachProductsListener(); // Avvia l'ascolto dei dati inventario
+            attachWinesListener();  // NUOVO: Avvia l'ascolto dei vini
           } else {
             // Utente non loggato, prova a loggare
             signInAnonymously(auth).catch((error) => {
@@ -553,17 +697,48 @@
     }
 
     /**
+     * NUOVO: Collega il listener a Firestore per i VINI.
+     */
+    function attachWinesListener() {
+      if (unsubscribeWines) {
+        unsubscribeWines();
+      }
+      
+      const winesCollectionRef = collection(db, "inventari", GRUPPO_ID, "vini");
+      
+      unsubscribeWines = onSnapshot(winesCollectionRef, (snapshot) => {
+        state.vini = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        
+        // Ordina alfabeticamente di default (verrà ri-ordinato nel render se serve)
+        state.vini.sort((a, b) => a.nome.localeCompare(b.nome));
+
+        // Non nascondere il loading overlay qui, 
+        // potrebbe essere già stato nascosto da attachProductsListener
+        render(); // Ridisegna tutto
+
+      }, (error) => {
+        console.error("Errore in onSnapshot (Vini): ", error);
+        showCustomAlert('Errore Database Vini', `Impossibile caricare i vini: ${error.message}`, 'error');
+      });
+    }
+
+    /**
      * Aggiunge tutti i listener per i pulsanti e gli input.
      */
     function initUIListeners() {
       // Navigazione Viste
       dom.header.navInventario.addEventListener('click', () => updateState({ view: 'inventario' }));
       dom.header.navListaSpesa.addEventListener('click', () => updateState({ view: 'listaSpesa' }));
+      dom.header.navCantina.addEventListener('click', () => updateState({ view: 'cantina' })); // NUOVO
       dom.header.goHomeBtn.addEventListener('click', () => updateState({ view: 'home' }));
       
       dom.home.goInventario.addEventListener('click', () => updateState({ view: 'inventario' }));
       dom.home.goListaSpesa.addEventListener('click', () => updateState({ view: 'listaSpesa' }));
       dom.home.goCosti.addEventListener('click', () => updateState({ view: 'costi' }));
+      dom.home.goCantina.addEventListener('click', () => updateState({ view: 'cantina' })); // NUOVO
 
       // CSV Upload / Export
       dom.home.showCsvUpload.addEventListener('click', () => dom.home.csvFileInput.click());
@@ -573,6 +748,11 @@
       // Ricerca
       dom.inventario.searchBar.addEventListener('input', (e) => {
         updateState({ searchTerm: e.target.value });
+      });
+
+      // NUOVO: Ricerca Vini
+      dom.cantina.searchBar.addEventListener('input', (e) => {
+        updateState({ searchTermVini: e.target.value });
       });
 
       // Filtri Inventario
@@ -605,6 +785,18 @@
         }
       });
       dom.formModal.form.addEventListener('submit', handleAddProduct);
+
+      // NUOVO: Modale Vini
+      dom.wineModal.openBtn.addEventListener('click', () => {
+        dom.wineModal.overlay.classList.remove('hidden');
+      });
+      dom.wineModal.closeBtn.addEventListener('click', closeWineModal);
+      dom.wineModal.overlay.addEventListener('click', (e) => {
+        if (e.target === dom.wineModal.overlay) {
+          closeWineModal();
+        }
+      });
+      dom.wineModal.form.addEventListener('submit', handleAddWine);
 
       // Lista Spesa
       dom.listaSpesa.copyBtn.addEventListener('click', copyShoppingListToClipboard);
@@ -644,6 +836,9 @@
       if (state.view === 'costi') {
         renderCostReport();
       }
+      if (state.view === 'cantina') {
+        renderWineList(); // NUOVO
+      }
       
       // 4. Render Badge Lista Spesa
       const shoppingList = getShoppingList();
@@ -663,10 +858,12 @@
       dom.views.inventario.classList.add('hidden');
       dom.views.listaSpesa.classList.add('hidden');
       dom.views.costi.classList.add('hidden');
+      dom.views.cantina.classList.add('hidden'); // NUOVO
       
       dom.header.navTabs.classList.add('hidden');
       dom.header.goHomeBtn.classList.add('hidden');
-      dom.formModal.openBtn.classList.add('hidden'); // Nascondi + di default
+      dom.formModal.openBtn.classList.add('hidden'); // Nascondi + inventario
+      dom.wineModal.openBtn.classList.add('hidden'); // NUOVO: Nascondi + vini
 
       if (state.view === 'home') {
         dom.views.home.classList.remove('hidden');
@@ -674,24 +871,34 @@
         // Se non siamo in Home, mostra i tab e il pulsante Home
         dom.header.navTabs.classList.remove('hidden');
         dom.header.goHomeBtn.classList.remove('hidden');
+
+        // Reset stato attivo tab
+        dom.header.navInventario.classList.add('bg-white', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
+        dom.header.navInventario.classList.remove('bg-blue-600', 'text-white');
+        dom.header.navListaSpesa.classList.add('bg-white', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
+        dom.header.navListaSpesa.classList.remove('bg-blue-600', 'text-white');
+        dom.header.navCantina.classList.add('bg-white', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
+        dom.header.navCantina.classList.remove('bg-purple-600', 'text-white'); // Usa viola per cantina
         
         if (state.view === 'inventario') {
           dom.views.inventario.classList.remove('hidden');
-          dom.formModal.openBtn.classList.remove('hidden'); // Mostra +
+          dom.formModal.openBtn.classList.remove('hidden'); // Mostra + inventario
           // Stato attivo tab
           dom.header.navInventario.classList.add('bg-blue-600', 'text-white');
           dom.header.navInventario.classList.remove('bg-white', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
-          dom.header.navListaSpesa.classList.add('bg-white', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
-          dom.header.navListaSpesa.classList.remove('bg-blue-600', 'text-white');
         } else if (state.view === 'listaSpesa') {
           dom.views.listaSpesa.classList.remove('hidden');
           // Stato attivo tab
           dom.header.navListaSpesa.classList.add('bg-blue-600', 'text-white');
           dom.header.navListaSpesa.classList.remove('bg-white', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
-          dom.header.navInventario.classList.add('bg-white', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
-          dom.header.navInventario.classList.remove('bg-blue-600', 'text-white');
         } else if (state.view === 'costi') {
           dom.views.costi.classList.remove('hidden');
+        } else if (state.view === 'cantina') {
+          dom.views.cantina.classList.remove('hidden');
+          dom.wineModal.openBtn.classList.remove('hidden'); // Mostra + vini
+          // Stato attivo tab
+          dom.header.navCantina.classList.add('bg-purple-600', 'text-white');
+          dom.header.navCantina.classList.remove('bg-white', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
         }
       }
     }
@@ -1157,7 +1364,7 @@
           
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">${p.nome}</td>
+            <td class="px-4 py-2 text-sm font-medium text-gray-900 dark:text-gray-100">${p.nome}</td>
             <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-right">
               ${quantita} ${p.unita} x ${formatCurrency(costo)}
             </td>
@@ -1216,7 +1423,176 @@
     }
 
 
-    
+    // --- NUOVE FUNZIONI PER CANTINA VINI ---
+
+    /**
+     * NUOVO: Disegna la lista dei vini nella cantina.
+     */
+    function renderWineList() {
+      const container = dom.cantina.listContainer;
+      // 1. Filtra i vini in base alla ricerca (nome, anno, cantina, regione)
+      const searchTerm = state.searchTermVini.toLowerCase();
+      const filteredWines = state.vini.filter(v => 
+        v.nome.toLowerCase().includes(searchTerm) ||
+        String(v.anno).includes(searchTerm) ||
+        (v.cantina && v.cantina.toLowerCase().includes(searchTerm)) || // AGGIUNTO
+        (v.regione && v.regione.toLowerCase().includes(searchTerm))    // AGGIUNTO
+      );
+      
+      // 2. Gestisci messaggi "nessun vino"
+      dom.cantina.noWinesMsg.classList.add('hidden');
+      dom.cantina.noSearchResultsWinesMsg.classList.add('hidden');
+
+      if (state.vini.length === 0) {
+        dom.cantina.noWinesMsg.classList.remove('hidden');
+        return;
+      }
+
+      if (filteredWines.length === 0 && state.searchTermVini) {
+        dom.cantina.noSearchResultsWinesMsg.classList.remove('hidden');
+        return;
+      }
+
+      // 3. Disegna le carte dei vini
+      filteredWines.forEach(wine => {
+        const card = createWineCard(wine);
+        container.appendChild(card);
+      });
+    }
+
+    /**
+     * NUOVO: Crea il singolo elemento card per un vino.
+     */
+    function createWineCard(wine) {
+      const div = document.createElement('div');
+      div.className = "wine-card bg-white rounded-lg shadow-lg overflow-hidden dark:bg-gray-800 flex flex-col";
+      
+      const costo = parseFloat(wine.costo) || 0;
+      const vendita = parseFloat(wine.vendita) || 0;
+      const margine = vendita - costo;
+      
+      const margineColor = margine > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
+
+      div.innerHTML = `
+        <!-- Intestazione Carta Vino -->
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+          <input type="text" value="${wine.nome}" data-field="nome" class="text-xl font-semibold text-gray-800 truncate bg-transparent focus:outline-none focus:ring-1 focus:ring-purple-500 rounded-md px-1 -ml-1 w-full dark:text-gray-100 dark:focus:bg-gray-700">
+          
+          <!-- Wrapper per campi secondari -->
+          <div class="grid grid-cols-2 gap-x-4 mt-2">
+            <div class="flex items-center">
+              <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mr-2 w-12">Anno:</span>
+              <input type="number" value="${wine.anno}" data-field="anno" min="1900" max="2100" class="w-full text-sm border rounded-md p-1 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+            </div>
+            
+            <!-- CAMPO REGIONE -->
+            <div class="flex items-center">
+              <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mr-2 w-12">Regione:</span>
+              <input type="text" value="${wine.regione || ''}" data-field="regione" class="w-full text-sm border rounded-md p-1 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+            </div>
+
+            <!-- CAMPO CANTINA (su riga nuova) -->
+            <div class="flex items-center col-span-2 mt-2">
+              <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mr-2 w-12">Cantina:</span>
+              <input type="text" value="${wine.cantina || ''}" data-field="cantina" class="w-full text-sm border rounded-md p-1 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+            </div>
+          </div>
+        </div>
+        
+        <!-- Corpo Carta Vino (Quantità) -->
+        <div class="p-4 flex-grow">
+          <div class="flex items-center justify-between">
+            <span class="text-lg font-medium text-gray-700 dark:text-gray-200">Quantità</span>
+            <div class="flex items-center space-x-2">
+              <button class="btn-minus-vino p-1 rounded-full bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/50 dark:text-red-300 dark:hover:bg-red-900">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" /></svg>
+              </button>
+              
+              <input type="number" value="${wine.quantita}" data-field="quantita" step="1" min="0" class="w-16 text-center text-lg font-bold border rounded-md p-1 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+              
+              <button class="btn-plus-vino p-1 rounded-full bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-900/50 dark:text-green-300 dark:hover:bg-green-900">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Carta Vino (Costi) -->
+        <div class="p-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col">
+              <label class="text-xs font-semibold text-gray-500 dark:text-gray-400">Costo (€)</label>
+              <input type="number" value="${costo}" data-field="costo" min="0" step="0.01" class="text-sm border rounded-md p-1.5 shadow-sm w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+            </div>
+            <div class="flex flex-col">
+              <label class="text-xs font-semibold text-gray-500 dark:text-gray-400">Vendita (€)</label>
+              <input type="number" value="${vendita}" data-field="vendita" min="0" step="0.01" class="text-sm border rounded-md p-1.5 shadow-sm w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+            </div>
+          </div>
+          <div class="mt-3 flex justify-between items-center">
+            <span class="text-sm font-bold text-gray-700 dark:text-gray-200">Margine:</span>
+            <span class="text-lg font-bold ${margineColor}">
+              ${formatCurrency(margine)}
+            </span>
+          </div>
+        </div>
+        
+        <!-- Pulsante Elimina -->
+        <button class="delete-btn-vino absolute top-3 right-3 p-1 text-gray-400 hover:text-red-500 dark:hover:text-red-400">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
+      `;
+
+      // Aggiungi Listener
+      
+      // Pulsanti +/-
+      const btnMinus = div.querySelector('.btn-minus-vino');
+      const btnPlus = div.querySelector('.btn-plus-vino');
+      
+      btnMinus.addEventListener('click', (e) => {
+        e.preventDefault(); e.stopPropagation();
+        let newQuantita = (parseInt(wine.quantita) || 0) - 1;
+        if (newQuantita < 0) newQuantita = 0;
+        handleWineUpdate(wine.id, 'quantita', newQuantita);
+      });
+
+      btnPlus.addEventListener('click', (e) => {
+        e.preventDefault(); e.stopPropagation();
+        let newQuantita = (parseInt(wine.quantita) || 0) + 1;
+        handleWineUpdate(wine.id, 'quantita', newQuantita);
+      });
+
+      // Input Modificabili
+      const inputs = div.querySelectorAll('[data-field]');
+      inputs.forEach(input => {
+        input.addEventListener('change', (e) => {
+          const field = e.target.dataset.field;
+          let value = (e.target.type === 'number') ? parseFloat(e.target.value) : e.target.value;
+          if (e.target.type === 'number' && isNaN(value)) value = 0;
+          
+          // Se l'anno è un numero, assicurati che sia intero
+          if (field === 'anno') value = parseInt(value) || 1900;
+          // Se la quantità è un numero, assicurati che sia intero
+          if (field === 'quantita') value = parseInt(value) || 0;
+
+          handleWineUpdate(wine.id, field, value);
+        });
+        input.addEventListener('click', e => e.stopPropagation());
+      });
+      
+      // Pulsante Rimuovi
+      const deleteBtn = div.querySelector('.delete-btn-vino');
+      deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        handleDeleteWine(wine.id, wine.nome);
+      });
+
+      return div;
+    }
+
+
     // --- FUNZIONI DI LOGICA (GETTERS) ---
 
     /**
@@ -1288,6 +1664,14 @@
     }
 
     /**
+     * NUOVO: Chiude il modale VINI e resetta il form.
+     */
+    function closeWineModal() {
+      dom.wineModal.overlay.classList.add('hidden');
+      dom.wineModal.form.reset();
+    }
+
+    /**
      * Gestisce l'invio del form per un nuovo prodotto.
      */
     async function handleAddProduct(e) {
@@ -1318,6 +1702,36 @@
     }
 
     /**
+     * NUOVO: Gestisce l'invio del form per un nuovo vino.
+     */
+    async function handleAddWine(e) {
+      e.preventDefault();
+      
+      const newWine = {
+        nome: dom.wineModal.inputs.nome.value,
+        anno: parseInt(dom.wineModal.inputs.anno.value) || 1900,
+        quantita: parseInt(dom.wineModal.inputs.quantita.value) || 0,
+        costo: parseFloat(dom.wineModal.inputs.costo.value) || 0,
+        vendita: parseFloat(dom.wineModal.inputs.vendita.value) || 0,
+        // NUOVI
+        cantina: dom.wineModal.inputs.cantina.value || '',
+        regione: dom.wineModal.inputs.regione.value || '',
+      };
+
+      try {
+        const winesCollectionRef = collection(db, "inventari", GRUPPO_ID, "vini");
+        await addDoc(winesCollectionRef, newWine);
+        
+        closeWineModal();
+        showCustomAlert('Successo!', `Vino "${newWine.nome}" aggiunto alla cantina.`, 'success');
+        
+      } catch (error) {
+        console.error("Errore aggiunta vino: ", error);
+        showCustomAlert('Errore', `Impossibile aggiungere il vino: ${error.message}`, 'error');
+      }
+    }
+
+    /**
      * Aggiorna un campo di un prodotto esistente su Firebase.
      */
     async function handleProductUpdate(productId, field, value) {
@@ -1337,6 +1751,22 @@
     }
 
     /**
+     * NUOVO: Aggiorna un campo di un vino esistente su Firebase.
+     */
+    async function handleWineUpdate(wineId, field, value) {
+      const wineRef = doc(db, "inventari", GRUPPO_ID, "vini", wineId);
+      
+      try {
+        await updateDoc(wineRef, {
+          [field]: value
+        });
+      } catch (error) {
+        console.error(`Errore aggiornamento vino ${field}: `, error);
+        showCustomAlert('Errore', `Impossibile aggiornare ${field}: ${error.message}`, 'error');
+      }
+    }
+
+    /**
      * Cancella un prodotto da Firebase.
      */
     async function handleDeleteProduct(productId, productName) {
@@ -1348,6 +1778,22 @@
           showCustomAlert('Successo!', `Prodotto "${productName}" eliminato.`, 'success');
         } catch (error) {
           console.error("Errore eliminazione prodotto: ", error);
+          showCustomAlert('Errore', `Impossibile eliminare: ${error.message}`, 'error');
+        }
+      }
+    }
+
+    /**
+     * NUOVO: Cancella un vino da Firebase.
+     */
+    async function handleDeleteWine(wineId, wineName) {
+      if (true) { // Salta conferma per ora
+        try {
+          const wineRef = doc(db, "inventari", GRUPPO_ID, "vini", wineId);
+          await deleteDoc(wineRef);
+          showCustomAlert('Successo!', `Vino "${wineName}" eliminato.`, 'success');
+        } catch (error) {
+          console.error("Errore eliminazione vino: ", error);
           showCustomAlert('Errore', `Impossibile eliminare: ${error.message}`, 'error');
         }
       }
@@ -1638,3 +2084,7 @@
 
 </body>
 </html>
+
+
+
+
