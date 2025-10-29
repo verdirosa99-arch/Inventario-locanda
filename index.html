@@ -38,7 +38,6 @@
     
     <!-- Intestazione e Navigazione Viste -->
     <header class="mb-6">
-      <!-- (Intestazione invariata) -->
       <div class="flex justify-between items-center">
         <h1 class="text-3xl md:text-4xl font-bold text-gray-800 dark:text-gray-100">Gestione Inventario</h1>
         <div class="flex items-center space-x-4">
@@ -60,6 +59,7 @@
           </label>
         </div>
       </div>
+
       <!-- Wrapper per le schede di navigazione -->
       <nav id="main-nav-tabs" class="flex space-x-2 mt-4 hidden">
         <button id="nav-inventario"
@@ -78,24 +78,122 @@
     <!-- Sezione Viste -->
     <main>
       
-      <!-- VISTA: Home (invariata) -->
+      <!-- VISTA: Home -->
       <div id="view-home">
-        <!-- ... (codice home invariato) ... -->
+        <h2 class="text-2xl font-semibold text-gray-700 mb-6 dark:text-gray-200">Menu Principale</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Bottone Inventario -->
+          <button id="btn-go-inventario" class="flex flex-col items-center justify-center bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center dark:bg-gray-800 dark:hover:shadow-lg dark:hover:shadow-gray-700/50">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-blue-600 dark:text-blue-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <span class="text-xl font-semibold text-gray-800 dark:text-gray-100">Inventario</span>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Gestisci e aggiungi prodotti</p>
+          </button>
+          
+          <!-- Bottone Lista Spesa -->
+          <button id="btn-go-listaspesa" class="flex flex-col items-center justify-center bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center dark:bg-gray-800 dark:hover:shadow-lg dark:hover:shadow-gray-700/50">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-500 dark:text-red-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <span class="text-xl font-semibold text-gray-800 dark:text-gray-100">Lista Spesa</span>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Vedi i prodotti da ordinare</p>
+          </button>
+          
+          <!-- Bottone Report Costi -->
+          <button id="btn-go-costi" class="flex flex-col items-center justify-center bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center dark:bg-gray-800 dark:hover:shadow-lg dark:hover:shadow-gray-700/50">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-green-600 dark:text-green-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <span class="text-xl font-semibold text-gray-800 dark:text-gray-100">Report Costi</span>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Visualizza valore inventario</p>
+          </button>
+        </div>
       </div>
       
-      <!-- VISTA: Inventario (invariata) -->
+      <!-- VISTA: Inventario -->
       <div id="view-inventario" class="hidden">
-        <!-- ... (codice filtri e contenitore lista invariati) ... -->
+        <div class="space-y-6">
+          
+          <!-- Filtri Vista Inventario (NUOVA VERSIONE A TENDINA) -->
+          <div class="relative">
+            <!-- Pulsante per aprire il menu a tendina -->
+            <button id="toggle-filters-btn" class="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg shadow-md font-medium text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              <span>Opzioni Vista</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </button>
+      
+            <!-- Contenitore del menu a tendina -->
+            <div id="filters-dropdown" class="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-xl p-4 z-30 hidden w-full md:w-auto dark:bg-gray-800 dark:border dark:border-gray-700">
+              <div class="flex flex-col md:flex-row gap-6">
+                <!-- Sezione Raggruppa -->
+                <div>
+                  <span class="font-medium text-gray-700 block mb-2 dark:text-gray-200">Raggruppa per:</span>
+                  <div class="flex flex-col sm:flex-row gap-2">
+                    <button id="group-categoria" class="px-3 py-1 rounded-md text-sm font-medium bg-blue-500 text-white">
+                      Categoria
+                    </button>
+                    <button id="group-fornitore" class="px-3 py-1 rounded-md text-sm font-medium bg-white shadow-sm dark:bg-gray-600 dark:text-gray-200">
+                      Fornitore
+                    </button>
+                  </div>
+                </div>
+                <!-- Sezione Vista -->
+                <div class="border-t md:border-t-0 md:border-l border-gray-200 pt-4 md:pt-0 md:pl-4 dark:border-gray-700">
+                  <span class="font-medium text-gray-700 block mb-2 dark:text-gray-200">Vista:</span>
+                  <div class="flex flex-col sm:flex-row gap-2">
+                    <button id="view-compatta" class="px-3 py-1 rounded-md text-sm font-medium bg-blue-500 text-white">
+                      Compatta
+                    </button>
+                    <button id="view-completa" class="px-3 py-1 rounded-md text-sm font-medium bg-white shadow-sm dark:bg-gray-600 dark:text-gray-200">
+                      Completa
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+          <!-- Lista Prodotti Inventario -->
+          <div id="inventory-list-container" class="space-y-6">
+            <!-- Contenuto generato da JS -->
+          </div>
+        </div>
       </div>
 
-      <!-- VISTA: Lista Spesa (invariata) -->
+      <!-- VISTA: Lista Spesa -->
       <div id="view-listaSpesa" class="hidden">
-        <!-- ... (codice lista spesa invariato) ... -->
+        <div class="bg-white p-4 md:p-6 rounded-lg shadow-md dark:bg-gray-800">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-100">Lista della Spesa</h2>
+            <!-- Pulsante Copia -->
+            <button id="copy-shopping-list-btn" class="mt-4 md:mt-0 flex items-center justify-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-200 font-semibold dark:hover:bg-blue-500">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              <span>Copia Lista per Fornitori</span>
+            </button>
+          </div>
+          <div id="shopping-list-container" class="space-y-8">
+            <!-- Contenuto generato da JS -->
+          </div>
+        </div>
       </div>
       
-      <!-- VISTA: Report Costi (invariata) -->
+      <!-- VISTA: Report Costi -->
       <div id="view-costi" class="hidden">
-        <!-- ... (codice report costi invariato) ... -->
+        <div class="bg-white p-4 md:p-6 rounded-lg shadow-md dark:bg-gray-800">
+          <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6 dark:text-gray-100">Report Valore Inventario</h2>
+          <div id="cost-report-container" class="space-y-8">
+            <!-- Contenuto generato da JS -->
+          </div>
+        </div>
       </div>
       
     </main>
@@ -110,7 +208,9 @@
       
       <!-- Pulsante Chiudi Modale -->
       <button id="close-form-modal-btn" class="absolute top-3 right-4 text-gray-400 hover:text-gray-600 z-10 dark:hover:text-gray-200">
-        <!-- ... (icona X invariata) ... -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
       </button>
 
       <!-- Form Aggiungi Prodotto (spostato qui) -->
@@ -175,9 +275,11 @@
     </div>
   </div>
 
-  <!-- Pulsante "+" Fluttuante (invariato) -->
-  <button id="show-add-form-btn" class="fixed bottom-6 right-6 ...">
-    <!-- ... (icona + invariata) ... -->
+  <!-- Pulsante "+" Fluttuante -->
+  <button id="show-add-form-btn" class="fixed bottom-6 right-6 bg-blue-600 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:bg-blue-700 transition z-50 dark:hover:bg-blue-500">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+    </svg>
   </button>
 
 
@@ -212,7 +314,6 @@
     // --- STATO LOCALE E COSTANTI ---
     const THEME_KEY = 'inventarioAppTheme';
     const state = {
-      // (stato invariato)
       currentView: 'home', 
       groupBy: 'categoria',
       inventoryViewMode: 'compatta',
@@ -233,14 +334,39 @@
 
     // --- SELETTORI DOM (Invariati) ---
     const $ = (selector) => document.querySelector(selector);
-    // (tutti i selettori invariati)
+    const viewHome = $('#view-home');
+    const viewInventario = $('#view-inventario');
+    const viewListaSpesa = $('#view-listaSpesa');
+    const viewCosti = $('#view-costi');
+    const mainNavTabs = $('#main-nav-tabs');
+    const btnGoHome = $('#btn-go-home');
+    const btnGoInventario = $('#btn-go-inventario');
+    const btnGoListaSpesa = $('#btn-go-listaspesa');
+    const btnGoCosti = $('#btn-go-costi');
+    const navInventario = $('#nav-inventario');
+    const navListaSpesa = $('#nav-listaSpesa');
+    const groupCategoria = $('#group-categoria');
+    const groupFornitore = $('#group-fornitore');
+    const viewCompatta = $('#view-compatta');
+    const viewCompleta = $('#view-completa');
+    const toggleFiltersBtn = $('#toggle-filters-btn');
+    const filtersDropdown = $('#filters-dropdown');
+    const addProductForm = $('#add-product-form');
+    const showAddFormBtn = $('#show-add-form-btn');
+    const formModalOverlay = $('#form-modal-overlay');
+    const closeFormModalBtn = $('#close-form-modal-btn');
+    const inventoryListContainer = $('#inventory-list-container');
+    const shoppingListContainer = $('#shopping-list-container');
+    const costReportContainer = $('#cost-report-container');
+    const shoppingListBadge = $('#shopping-list-badge');
+    const copyShoppingListBtn = $('#copy-shopping-list-btn');
+    const themeToggle = $('#theme-toggle');
     const loadingOverlay = $('#loading-overlay');
 
     // --- FUNZIONI DI LOGICA (Modificate per Firebase) ---
 
     /** Raggruppa i prodotti (invariato) */
     function getGroupedProducts() {
-      // ... (codice invariato)
       const groupKey = state.groupBy;
       const grouped = state.products.reduce((acc, prodotto) => {
         const key = prodotto[groupKey] || 'Non Assegnato';
@@ -256,7 +382,6 @@
 
     /** Filtra e raggruppa lista spesa (invariato) */
     function getShoppingListGrouped() {
-      // ... (codice invariato)
       const prodottiDaAcquistare = state.products.filter(
         p => p.quantitaAttuale <= p.quantitaMinima
       );
@@ -304,7 +429,6 @@
 
     /** Rimuove un prodotto da Firebase (invariato) */
     async function rimuoviProdotto(id) {
-      // ... (codice invariato)
       try {
         const docRef = doc(state.db, `inventario/${GRUPPO_ID}/prodotti`, id);
         await deleteDoc(docRef);
@@ -316,7 +440,6 @@
 
     /** Aggiorna un campo del prodotto su Firebase (invariato) */
     async function updateProductField(id, field, value) {
-      // ... (codice invariato)
       const product = state.products.find(p => p.id === id);
       if (!product) return;
       
@@ -342,7 +465,6 @@
     
     /** Aggiorna la quantità con +1 o -1 su Firebase (invariato) */
     async function updateProductQuantity(id, change) {
-      // ... (codice invariato)
       const product = state.products.find(p => p.id === id);
       if (!product) return;
       
@@ -370,25 +492,109 @@
     
     /** Copia la lista spesa negli appunti (invariato) */
     function copiaListaSpesa() {
-        // ... (codice invariato)
+        const grouped = getShoppingListGrouped();
+        if (grouped.size === 0) {
+            alert("Lista della spesa vuota!");
+            return;
+        }
+        
+        let testoLista = "Lista della Spesa:\n";
+        
+        for (let [fornitore, prodotti] of grouped) {
+            testoLista += `\n--- Fornitore: ${fornitore} ---\n`;
+            prodotti.forEach(prodotto => {
+                 testoLista += `- ${prodotto.nome} (Att: ${prodotto.quantitaAttuale} / Min: ${prodotto.quantitaMinima}) - ${prodotto.unita}\n`;
+            });
+        }
+
+        navigator.clipboard.writeText(testoLista).then(() => {
+            const originalText = copyShoppingListBtn.innerHTML;
+            copyShoppingListBtn.innerHTML = `
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>Copiato!</span>`;
+            setTimeout(() => {
+                copyShoppingListBtn.innerHTML = originalText;
+            }, 2000);
+        }).catch(err => {
+            console.error('Errore nel copiare la lista: ', err);
+            alert("Errore: Impossibile copiare la lista.");
+        });
     }
 
     // --- FUNZIONI DI RENDER (Aggiornate) ---
 
     function render() {
-      // ... (codice invariato)
+      renderNav();
+      renderViews();
+      if (state.currentView === 'inventario') {
+        renderInventoryList();
+      }
+      if (state.currentView === 'listaSpesa') {
+        renderShoppingList();
+      }
+      if (state.currentView === 'costi') {
+        renderCosti();
+      }
+      renderBadge();
     }
 
-    /** Aggiorna la navigazione (invariato) */
     function renderNav() {
-      // ... (codice invariato)
+      const isHome = state.currentView === 'home';
+      
+      mainNavTabs.classList.toggle('hidden', isHome);
+      btnGoHome.classList.toggle('hidden', isHome);
+      
+      showAddFormBtn.classList.toggle('hidden', state.currentView !== 'inventario');
+
+      if (!isHome) {
+        if (state.currentView === 'inventario') {
+          navInventario.classList.add('bg-blue-600', 'text-white');
+          navInventario.classList.remove('bg-white', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
+          navListaSpesa.classList.add('bg-white', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
+          navListaSpesa.classList.remove('bg-blue-600', 'text-white');
+        } else { // 'listaSpesa' o 'costi'
+          navListaSpesa.classList.add('bg-blue-600', 'text-white');
+          navListaSpesa.classList.remove('bg-white', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
+          navInventario.classList.add('bg-white', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
+          navInventario.classList.remove('bg-blue-600', 'text-white');
+        }
+      }
+      
+      // Aggiorna lo stile dei pulsanti dentro il dropdown
+      if (state.groupBy === 'categoria') {
+        groupCategoria.classList.add('bg-blue-500', 'text-white');
+        groupCategoria.classList.remove('bg-white', 'shadow-sm', 'dark:bg-gray-600', 'dark:text-gray-200');
+        groupFornitore.classList.add('bg-white', 'shadow-sm', 'dark:bg-gray-600', 'dark:text-gray-200');
+        groupFornitore.classList.remove('bg-blue-500', 'text-white');
+      } else {
+        groupFornitore.classList.add('bg-blue-500', 'text-white');
+        groupFornitore.classList.remove('bg-white', 'shadow-sm', 'dark:bg-gray-600', 'dark:text-gray-200');
+        groupCategoria.classList.add('bg-white', 'shadow-sm', 'dark:bg-gray-600', 'dark:text-gray-200');
+        groupCategoria.classList.remove('bg-blue-500', 'text-white');
+      }
+      
+      if (state.inventoryViewMode === 'compatta') {
+        viewCompatta.classList.add('bg-blue-500', 'text-white');
+        viewCompatta.classList.remove('bg-white', 'shadow-sm', 'dark:bg-gray-600', 'dark:text-gray-200');
+        viewCompleta.classList.add('bg-white', 'shadow-sm', 'dark:bg-gray-600', 'dark:text-gray-200');
+        viewCompleta.classList.remove('bg-blue-500', 'text-white');
+      } else {
+        viewCompleta.classList.add('bg-blue-500', 'text-white');
+        viewCompleta.classList.remove('bg-white', 'shadow-sm', 'dark:bg-gray-600', 'dark:text-gray-200');
+        viewCompatta.classList.add('bg-white', 'shadow-sm', 'dark:bg-gray-600', 'dark:text-gray-200');
+        viewCompatta.classList.remove('bg-blue-500', 'text-white');
+      }
     }
 
-    /** Mostra solo la vista corrente (invariato) */
     function renderViews() {
-      // ... (codice invariato)
+      viewHome.classList.toggle('hidden', state.currentView !== 'home');
+      viewInventario.classList.toggle('hidden', state.currentView !== 'inventario');
+      viewListaSpesa.classList.toggle('hidden', state.currentView !== 'listaSpesa');
+      viewCosti.classList.toggle('hidden', state.currentView !== 'costi');
     }
-    
+
     /** Helper per le opzioni Unità (invariato) */
     function getUnitOptionsHTML(selectedValue) {
       return unitOptions.map(unita => 
@@ -422,7 +628,9 @@
     function renderInventoryList() {
       const grouped = getGroupedProducts();
       if (state.products.length === 0) {
-        // ... (codice "Nessun prodotto" invariato)
+        inventoryListContainer.innerHTML = `<div class="bg-white p-6 rounded-lg shadow text-center text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+          Nessun prodotto nell'inventario. Inizia aggiungendone uno!
+        </div>`;
         return;
       }
       
@@ -453,7 +661,6 @@
               let cardBottom = '';
               
               if (state.inventoryViewMode === 'compatta') {
-                // (Vista compatta invariata, con pulsanti +/- e Q.tà)
                 cardBottom = `
                   <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2 text-sm text-gray-600 dark:text-gray-400">
                     <div class="flex items-center space-x-2">
@@ -542,35 +749,272 @@
 
     /** Render lista spesa (invariato) */
     function renderShoppingList() {
-      // ... (codice invariato)
+      const grouped = getShoppingListGrouped();
+      if (grouped.size === 0) {
+        shoppingListContainer.innerHTML = `<div class="text-center text-gray-500 py-10 dark:text-gray-400">
+          <p class="text-lg">La tua lista della spesa è vuota!</p>
+          <p class="text-sm md:text-base">I prodotti appariranno qui automaticamente quando la loro quantità scende sotto il minimo.</p>
+        </div>`;
+        copyShoppingListBtn.disabled = true;
+        copyShoppingListBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      } else {
+        let html = '';
+        for (let [groupKey, prodotti] of grouped) {
+          html += `<section>
+            <h3 class="text-xl md:text-2xl font-semibold text-blue-700 mb-3 border-b border-blue-200 pb-2 dark:text-blue-400 dark:border-blue-700">
+              Fornitore: <span class="font-bold">${groupKey}</span>
+            </h3>
+            <ul class="list-disc list-inside pl-2 md:pl-4 space-y-2">
+              ${prodotti.map(prodotto => `
+                <li class="text-gray-800 text-base md:text-lg dark:text-gray-200">
+                  <span class="font-semibold">${prodotto.nome}</span>
+                  <span class="block text-sm text-gray-600 ml-6 md:ml-2 md:inline dark:text-gray-400">
+                    (Attuale: <strong class="text-red-600 dark:text-red-400">${prodotto.quantitaAttuale}</strong> / Min: ${prodotto.quantitaMinima}) - ${prodotto.unita}
+                  </span>
+                </li>
+              `).join('')}
+            </ul>
+          </section>`;
+        }
+        shoppingListContainer.innerHTML = html;
+        copyShoppingListBtn.disabled = false;
+        copyShoppingListBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
     }
     
     /** Render per la pagina Costi (invariato) */
     function renderCosti() {
-      // ... (codice invariato)
+      if (state.products.length === 0) {
+        costReportContainer.innerHTML = `<div class="text-center text-gray-500 py-10 dark:text-gray-400">
+          <p class="text-lg">Nessun prodotto nell'inventario.</p>
+          <p class="text-sm md:text-base">Aggiungi prodotti e imposta il loro "Costo per Unità" per vedere il report.</p>
+        </div>`;
+        return;
+      }
+      
+      const groupedByCategoria = state.products.reduce((acc, prodotto) => {
+        const key = prodotto.categoria || 'Non Assegnato';
+        if (!acc.has(key)) {
+          acc.set(key, []);
+        }
+        acc.get(key).push(prodotto);
+        return acc;
+      }, new Map());
+      
+      const sortedGroups = new Map([...groupedByCategoria.entries()].sort((a, b) => a[0].localeCompare(b[0])));
+
+      let html = '';
+      let costoTotaleInventario = 0;
+
+      for (let [categoria, prodotti] of sortedGroups) {
+        let costoCategoria = 0;
+        
+        const prodottiHtml = prodotti.map(prodotto => {
+          const costoProdotto = (prodotto.costoUnita || 0) * (prodotto.quantitaAttuale || 0);
+          costoCategoria += costoProdotto;
+          
+          return `<li class="flex justify-between items-center text-gray-700 text-sm md:text-base py-1 dark:text-gray-300">
+            <span>
+              <span class="font-medium">${prodotto.nome}</span>
+              <span class="text-gray-500 text-xs md:text-sm ml-2 dark:text-gray-400">(${prodotto.quantitaAttuale} ${prodotto.unita} × ${formatCurrency(prodotto.costoUnita)})</span>
+            </span>
+            <span class="font-semibold">${formatCurrency(costoProdotto)}</span>
+          </li>`;
+        }).join('');
+        
+        html += `<section>
+          <h3 class="text-xl md:text-2xl font-semibold text-blue-700 mb-3 border-b border-blue-200 pb-2 capitalize dark:text-blue-400 dark:border-blue-700">
+            ${categoria}
+          </h3>
+          <ul class="divide-y divide-gray-200 dark:divide-gray-700 mb-3">
+            ${prodottiHtml}
+          </ul>
+          <div class="text-right font-bold text-gray-800 text-lg border-t border-gray-300 pt-2 dark:text-gray-100 dark:border-gray-600">
+            Totale Categoria: ${formatCurrency(costoCategoria)}
+          </div>
+        </section>`;
+        
+        costoTotaleInventario += costoCategoria;
+      }
+      
+      const totalHtml = `
+        <div class="bg-gray-200 p-4 rounded-lg mb-8 dark:bg-gray-700">
+          <h2 class="text-xl md:text-2xl font-bold text-gray-900 text-center dark:text-gray-100">
+            Valore Totale Inventario:
+            <span class="text-green-700 dark:text-green-400">${formatCurrency(costoTotaleInventario)}</span>
+          </h2>
+        </div>
+      `;
+      
+      costReportContainer.innerHTML = totalHtml + html;
     }
     
     /** Formatta valuta (invariato) */
     function formatCurrency(value) {
-      // ... (codice invariato)
+      return (value || 0).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' });
     }
     
     /** Render badge notifiche (invariato) */
     function renderBadge() {
-      // ... (codice invariato)
+        const grouped = getShoppingListGrouped();
+        const totalItems = Array.from(grouped.values()).reduce((acc, prodotti) => acc + prodotti.length, 0);
+        
+        if (totalItems > 0) {
+            shoppingListBadge.textContent = totalItems;
+            shoppingListBadge.classList.remove('hidden');
+        } else {
+            shoppingListBadge.classList.add('hidden');
+        }
     }
     
     // --- FUNZIONI DARK MODE (Invariate) ---
     function applyTheme(theme) {
-      // ... (codice invariato)
+        if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem(THEME_KEY, 'dark');
+            themeToggle.checked = true;
+        } else {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem(THEME_KEY, 'light');
+            themeToggle.checked = false;
+        }
     }
+    
     function initTheme() {
-      // ... (codice invariato)
+        const savedTheme = localStorage.getItem(THEME_KEY);
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark') {
+            applyTheme('dark');
+        } else if (savedTheme === 'light') {
+            applyTheme('light');
+        } else if (prefersDark) {
+            applyTheme('dark'); 
+        } else {
+            applyTheme('light'); 
+        }
     }
 
     // --- EVENT LISTENERS (Invariati) ---
-    // (Tutti gli event listener sono invariati)
-    // ...
+
+    btnGoHome.addEventListener('click', () => {
+      state.currentView = 'home';
+      render();
+    });
+    btnGoInventario.addEventListener('click', () => {
+      state.currentView = 'inventario';
+      render();
+    });
+    btnGoListaSpesa.addEventListener('click', () => {
+      state.currentView = 'listaSpesa';
+      render();
+    });
+    btnGoCosti.addEventListener('click', () => {
+      state.currentView = 'costi';
+      render();
+    });
+    navInventario.addEventListener('click', () => {
+      state.currentView = 'inventario';
+      render();
+    });
+    navListaSpesa.addEventListener('click', () => {
+      state.currentView = 'listaSpesa';
+      render();
+    });
+    
+    copyShoppingListBtn.addEventListener('click', copiaListaSpesa);
+
+    filtersDropdown.addEventListener('click', (e) => {
+        let changed = false;
+        if (e.target.id === 'group-categoria') {
+            state.groupBy = 'categoria';
+            changed = true;
+        }
+        if (e.target.id === 'group-fornitore') {
+            state.groupBy = 'fornitore';
+            changed = true;
+        }
+        if (e.target.id === 'view-compatta') {
+            state.inventoryViewMode = 'compatta';
+            changed = true;
+        }
+        if (e.target.id === 'view-completa') {
+            state.inventoryViewMode = 'completa';
+            changed = true;
+        }
+        
+        if(changed) {
+            render();
+            filtersDropdown.classList.add('hidden');
+        }
+    });
+
+    addProductForm.addEventListener('submit', aggiungiProdotto);
+
+    document.body.addEventListener('click', (e) => {
+      const removeButton = e.target.closest('.remove-btn');
+      if (removeButton) {
+        const id = removeButton.dataset.id;
+        if (confirm("Sei sicuro di voler eliminare questo prodotto?")) {
+          rimuoviProdotto(id);
+        }
+        return; 
+      }
+      
+      const increaseButton = e.target.closest('.qty-increase');
+      if (increaseButton) {
+        const id = increaseButton.dataset.id;
+        updateProductQuantity(id, 1);
+        return;
+      }
+      
+      const decreaseButton = e.target.closest('.qty-decrease');
+      if (decreaseButton) {
+        const id = decreaseButton.dataset.id;
+        updateProductQuantity(id, -1);
+        return;
+      }
+      
+      if (!filtersDropdown.classList.contains('hidden') && !toggleFiltersBtn.contains(e.target) && !filtersDropdown.contains(e.target)) {
+        filtersDropdown.classList.add('hidden');
+      }
+    });
+    
+    document.body.addEventListener('focusout', (e) => {
+        if (e.target.classList.contains('editable-input')) {
+            const { id, field } = e.target.dataset;
+            // Trova il prodotto nello stato locale per confronto
+            const product = state.products.find(p => p.id === id);
+            if(product && product[field] != e.targe.value) { // Errore di battitura qui!
+                updateProductField(id, field, e.target.value);
+            }
+        }
+    });
+
+    showAddFormBtn.addEventListener('click', () => {
+      formModalOverlay.classList.remove('hidden');
+    });
+    closeFormModalBtn.addEventListener('click', () => {
+      formModalOverlay.classList.add('hidden');
+    });
+    formModalOverlay.addEventListener('click', (e) => {
+      if (e.target === formModalOverlay) {
+        formModalOverlay.classList.add('hidden');
+      }
+    });
+    toggleFiltersBtn.addEventListener('click', (e) => {
+      e.stopPropagation(); 
+      filtersDropdown.classList.toggle('hidden');
+    });
+    
+    themeToggle.addEventListener('change', (e) => {
+        if (e.target.checked) {
+            applyTheme('dark');
+        } else {
+            applyTheme('light');
+        }
+    });
+
 
     // --- INIZIALIZZAZIONE FIREBASE ---
     
