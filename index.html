@@ -1867,14 +1867,35 @@
         const csvText = await file.text();
         const { headers, data } = parseCSV(csvText);
 
-        // Cerca gli indici delle colonne necessarie
-        const nomeIndex = headers.findIndex(h => h.toLowerCase().trim() === 'nome');
-        const categoriaIndex = headers.findIndex(h => h.toLowerCase().trim() === 'categoria');
-        const fornitoreIndex = headers.findIndex(h => h.toLowerCase().trim() === 'fornitore');
+        // --- INIZIO MODIFICA: Controllo header migliorato ---
+        const headersFound = headers.map(h => h.toLowerCase().trim());
+        
+        const findHeader = (possibleNames) => {
+            for (const name of possibleNames) {
+                const index = headersFound.indexOf(name);
+                if (index !== -1) return index;
+            }
+            return -1;
+        };
 
-        if (nomeIndex === -1 || categoriaIndex === -1 || fornitoreIndex === -1) {
-          throw new Error("File CSV non valido. Assicurati che contenga le colonne 'nome', 'categoria' e 'fornitore'.");
+        // Cerca gli indici delle colonne necessarie
+        const nomeIndex = findHeader(['nome']);
+        const categoriaIndex = findHeader(['categoria']);
+        const fornitoreIndex = findHeader(['fornitore']);
+
+        const requiredHeaders = ['nome', 'categoria', 'fornitore'];
+        const missingHeaders = [];
+
+        if (nomeIndex === -1) missingHeaders.push('nome');
+        if (categoriaIndex === -1) missingHeaders.push('categoria');
+        if (fornitoreIndex === -1) missingHeaders.push('fornitore');
+
+        if (missingHeaders.length > 0) {
+          // Messaggio di errore migliorato
+          const headersFoundString = headersFound.length > 0 ? headersFound.join(', ') : 'Nessuna';
+          throw new Error(`File CSV non valido. Colonne richieste mancanti: [${missingHeaders.join(', ')}]. Colonne trovate nel file: [${headersFoundString}]`);
         }
+        // --- FINE MODIFICA ---
         
         // Controlla i duplicati
         // Prendi i nomi dei prodotti esistenti
@@ -1946,18 +1967,41 @@
         const csvText = await file.text();
         const { headers, data } = parseCSV(csvText);
 
-        // Cerca gli indici delle colonne necessarie per i vini
-        const nomeIndex = headers.findIndex(h => h.toLowerCase().trim() === 'nome');
-        const annoIndex = headers.findIndex(h => h.toLowerCase().trim() === 'anno');
-        const cantinaIndex = headers.findIndex(h => h.toLowerCase().trim() === 'cantina');
-        const regioneIndex = headers.findIndex(h => h.toLowerCase().trim() === 'regione');
-        const costoIndex = headers.findIndex(h => h.toLowerCase().trim() === 'costo');
-        const venditaIndex = headers.findIndex(h => h.toLowerCase().trim() === 'vendita');
-        const quantitaIndex = headers.findIndex(h => h.toLowerCase().trim() === 'quantita');
+        // --- INIZIO MODIFICA: Controllo header migliorato ---
+        const headersFound = headers.map(h => h.toLowerCase().trim());
+        
+        const findHeader = (possibleNames) => {
+            for (const name of possibleNames) {
+                const index = headersFound.indexOf(name);
+                if (index !== -1) return index;
+            }
+            return -1;
+        };
 
-        if (nomeIndex === -1 || annoIndex === -1 || costoIndex === -1 || venditaIndex === -1 || quantitaIndex === -1) {
-          throw new Error("File CSV non valido. Assicurati che contenga almeno 'nome', 'anno', 'costo', 'vendita', 'quantita'.");
+        // Cerca gli indici delle colonne necessarie per i vini
+        const nomeIndex = findHeader(['nome']);
+        const annoIndex = findHeader(['anno']);
+        const cantinaIndex = findHeader(['cantina']);
+        const regioneIndex = findHeader(['regione']);
+        const costoIndex = findHeader(['costo']);
+        const venditaIndex = findHeader(['vendita']);
+        const quantitaIndex = findHeader(['quantita', 'quantità']); // ACCETTA ENTRAMBI
+
+        const requiredHeaders = ['nome', 'anno', 'costo', 'vendita', 'quantita/quantità'];
+        const missingHeaders = [];
+
+        if (nomeIndex === -1) missingHeaders.push('nome');
+        if (annoIndex === -1) missingHeaders.push('anno');
+        if (costoIndex === -1) missingHeaders.push('costo');
+        if (venditaIndex === -1) missingHeaders.push('vendita');
+        if (quantitaIndex === -1) missingHeaders.push('quantita/quantità');
+
+        if (missingHeaders.length > 0) {
+          // Messaggio di errore migliorato
+          const headersFoundString = headersFound.length > 0 ? headersFound.join(', ') : 'Nessuna';
+          throw new Error(`File CSV non valido. Colonne richieste mancanti: [${missingHeaders.join(', ')}]. Colonne trovate nel file: [${headersFoundString}]`);
         }
+        // --- FINE MODIFICA ---
         
         // Controlla i duplicati (basato sui vini esistenti)
         const existingNamesLower = state.vini.map(v => v.nome.toLowerCase());
@@ -2223,6 +2267,7 @@
 
 </body>
 </html>
+
 
 
 
