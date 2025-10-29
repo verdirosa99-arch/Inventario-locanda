@@ -2076,19 +2076,54 @@
     
     /**
      * Funzione di utility per il parsing di un file CSV.
+     * (MODIFICATA PER GESTIRE VIRGOLE E PUNTO/VIRGOLA)
      */
     function parseCSV(text) {
       const lines = text.replace(/\r/g, '').split('\n');
-      // Gestisce CSV con o senza virgolette
-      const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+      const headers = [];
       const data = [];
 
+      if (lines.length === 0) return { headers, data };
+
+      const headerLine = lines[0];
+      
+      // --- NUOVO: Rilevamento automatico separatore ---
+      const commaCount = (headerLine.match(/,/g) || []).length;
+      const semicolonCount = (headerLine.match(/;/g) || []).length;
+      const separator = semicolonCount > commaCount ? ';' : ',';
+      // Crea il Regex dinamicamente in base al separatore
+      // Spiegazione: Cerca (inizio riga O separatore), seguito da
+      // 1. (un campo tra virgolette) OPPURE 2. (un campo non-separatore)
+      const csvRegex = new RegExp(`(?:^|${separator})(?:"([^"]*)"|([^${separator}]*))`, 'g');
+      // --- FINE NUOVO ---
+
+      // 1. Estrai Intestazioni (Headers)
+      let match;
+      // Pulisce gli header da eventuali virgolette
+      while (match = csvRegex.exec(headerLine)) {
+          const header = match[1] ? match[1] : match[2];
+          headers.push(header.trim().replace(/^"|"$/g, ''));
+      }
+
+      // 2. Estrai Dati (Data)
       for (let i = 1; i < lines.length; i++) {
         if (lines[i].trim() === '') continue; // Salta righe vuote
         
-        // Regex semplice per split CSV (non gestisce virgolette *interne* a un campo quotato)
-        const values = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
-        data.push(values);
+        const row = [];
+        let lineMatch;
+        const line = lines[i];
+        
+        csvRegex.lastIndex = 0; // Resetta l'indice del regex
+        
+        while (lineMatch = csvRegex.exec(line)) {
+            // Pulisce i valori da eventuali virgolette
+            const value = (lineMatch[1] ? lineMatch[1] : lineMatch[2]).trim().replace(/^"|"$/g, '');
+            row.push(value);
+        }
+        
+        if (row.length > 0) {
+             data.push(row);
+        }
       }
       return { headers, data };
     }
@@ -2188,6 +2223,7 @@
 
 </body>
 </html>
+
 
 
 
