@@ -21,6 +21,21 @@
     .theme-switch-toggle {
       transition: all 0.2s ease-in-out;
     }
+    
+    /* Stile per il nuovo pulsante Importa */
+    .pulse-bg {
+      animation: pulse-bg 2s infinite;
+    }
+    @keyframes pulse-bg {
+      0%, 100% {
+        background-color: theme('colors.indigo.600');
+        box-shadow: 0 0 0 0 theme('colors.indigo.400');
+      }
+      50% {
+        background-color: theme('colors.indigo.700');
+        box-shadow: 0 0 0 10px theme('colors.indigo.400 / 0%');
+      }
+    }
   </style>
 </head>
 <body class="bg-gray-100 min-h-screen p-4 md:p-8 font-sans dark:bg-gray-900">
@@ -31,7 +46,7 @@
       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
     </svg>
-    <span class="text-white text-lg font-medium">Caricamento dati...</span>
+    <span id="loading-text" class="text-white text-lg font-medium">Caricamento dati...</span>
   </div>
 
   <div class="max-w-7xl mx-auto">
@@ -109,6 +124,21 @@
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Visualizza valore inventario</p>
           </button>
         </div>
+        
+        <!-- MODIFICA: Pulsante Importazione CSV -->
+        <div id="import-container" class="mt-8 hidden">
+          <label for="csv-file-input" class="w-full md:w-auto flex items-center justify-center space-x-2 bg-indigo-600 text-white px-6 py-4 rounded-lg shadow-lg hover:bg-indigo-700 transition-all duration-200 font-semibold pulse-bg cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            <span>Carica File CSV (One-Time)</span>
+          </label>
+          <input type="file" id="csv-file-input" class="hidden" accept=".csv">
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            Assicurati che il file CSV abbia la prima riga con le intestazioni: <strong>nome</strong>, <strong>categoria</strong>, <strong>fornitore</strong>.
+          </p>
+        </div>
+
       </div>
       
       <!-- VISTA: Inventario -->
@@ -131,20 +161,8 @@
             <!-- Contenitore del menu a tendina -->
             <div id="filters-dropdown" class="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-xl p-4 z-30 hidden w-full md:w-auto dark:bg-gray-800 dark:border dark:border-gray-700">
               <div class="flex flex-col md:flex-row gap-6">
-                <!-- Sezione Raggruppa -->
+                <!-- Sezione Vista (RIMOSSO BORDO) -->
                 <div>
-                  <span class="font-medium text-gray-700 block mb-2 dark:text-gray-200">Raggruppa per:</span>
-                  <div class="flex flex-col sm:flex-row gap-2">
-                    <button id="group-categoria" class="px-3 py-1 rounded-md text-sm font-medium bg-blue-500 text-white">
-                      Categoria
-                    </button>
-                    <button id="group-fornitore" class="px-3 py-1 rounded-md text-sm font-medium bg-white shadow-sm dark:bg-gray-600 dark:text-gray-200">
-                      Fornitore
-                    </button>
-                  </div>
-                </div>
-                <!-- Sezione Vista -->
-                <div class="border-t md:border-t-0 md:border-l border-gray-200 pt-4 md:pt-0 md:pl-4 dark:border-gray-700">
                   <span class="font-medium text-gray-700 block mb-2 dark:text-gray-200">Vista:</span>
                   <div class="flex flex-col sm:flex-row gap-2">
                     <button id="view-compatta" class="px-3 py-1 rounded-md text-sm font-medium bg-blue-500 text-white">
@@ -161,7 +179,7 @@
 
 
           <!-- Lista Prodotti Inventario -->
-          <div id="inventory-list-container" class="space-y-6">
+          <div id="inventory-list-container">
             <!-- Contenuto generato da JS -->
           </div>
         </div>
@@ -216,7 +234,6 @@
       <!-- Form Aggiungi Prodotto (spostato qui) -->
       <h2 class="text-xl md:text-2xl font-semibold mb-4 text-gray-700 dark:text-gray-200">Aggiungi Nuovo Prodotto</h2>
       
-      <!-- MODIFICA: Aggiunto campo "Stato" e rimosso "required" da Costo -->
       <form id="add-product-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Colonna 1 -->
         <div class="flex flex-col">
@@ -315,7 +332,6 @@
     const THEME_KEY = 'inventarioAppTheme';
     const state = {
       currentView: 'home', 
-      groupBy: 'categoria',
       inventoryViewMode: 'compatta',
       products: [],
       db: null,
@@ -325,14 +341,13 @@
     
     const unitOptions = ['kg', 'gr', 'pz', 'ct'];
     
-    // NUOVO: Definizioni per lo stato
     const statusOptions = {
       'disponibile': 'Disponibile',
       'non_necessario': 'Non Necessario',
       'aperto': 'Confezione Aperta'
     };
 
-    // --- SELETTORI DOM (Invariati) ---
+    // --- SELETTORI DOM ---
     const $ = (selector) => document.querySelector(selector);
     const viewHome = $('#view-home');
     const viewInventario = $('#view-inventario');
@@ -345,8 +360,6 @@
     const btnGoCosti = $('#btn-go-costi');
     const navInventario = $('#nav-inventario');
     const navListaSpesa = $('#nav-listaSpesa');
-    const groupCategoria = $('#group-categoria');
-    const groupFornitore = $('#group-fornitore');
     const viewCompatta = $('#view-compatta');
     const viewCompleta = $('#view-completa');
     const toggleFiltersBtn = $('#toggle-filters-btn');
@@ -362,29 +375,25 @@
     const copyShoppingListBtn = $('#copy-shopping-list-btn');
     const themeToggle = $('#theme-toggle');
     const loadingOverlay = $('#loading-overlay');
+    const loadingText = $('#loading-text');
+    
+    // MODIFICA: Selettori per Importazione CSV
+    const importContainer = $('#import-container');
+    const csvFileInput = $('#csv-file-input');
 
-    // --- FUNZIONI DI LOGICA (Modificate per Firebase) ---
+    // --- FUNZIONI DI LOGICA ---
 
-    /** Raggruppa i prodotti (invariato) */
-    function getGroupedProducts() {
-      const groupKey = state.groupBy;
-      const grouped = state.products.reduce((acc, prodotto) => {
-        const key = prodotto[groupKey] || 'Non Assegnato';
-        if (!acc.has(key)) {
-          acc.set(key, []);
-        }
-        acc.get(key).push(prodotto);
-        return acc;
-      }, new Map());
-      
-      return new Map([...grouped.entries()].sort((a, b) => a[0].localeCompare(b[0])));
+    /** Ritorna solo i prodotti ordinati */
+    function getSortedProducts() {
+      return [...state.products].sort((a, b) => a.nome.localeCompare(b.nome));
     }
 
-    /** Filtra e raggruppa lista spesa (invariato) */
+    /** Filtra e raggruppa lista spesa */
     function getShoppingListGrouped() {
       const prodottiDaAcquistare = state.products.filter(
-        p => p.quantitaAttuale <= p.quantitaMinima
+        p => (p.quantitaAttuale <= p.quantitaMinima && p.status === 'disponibile') || p.forceToLista === true
       );
+      
       const grouped = prodottiDaAcquistare.reduce((acc, prodotto) => {
         const key = prodotto.fornitore || 'Sconosciuto';
         if (!acc.has(key)) {
@@ -405,17 +414,17 @@
       
       for (let [key, value] of formData.entries()) {
         if (key === 'costoUnita' || key === 'quantitaAttuale' || key === 'quantitaMinima') {
-          // MODIFICA: gestisce il costo vuoto
           newProduct[key] = parseFloat(value) || 0; 
         } else {
           newProduct[key] = value;
         }
       }
       
-      // Assicura che lo stato sia impostato (anche se il form-data è strano)
       if (!newProduct.status) {
         newProduct.status = 'disponibile';
       }
+      
+      newProduct.forceToLista = false;
       
       try {
         await addDoc(state.collectionRef, newProduct);
@@ -427,7 +436,7 @@
       }
     }
 
-    /** Rimuove un prodotto da Firebase (invariato) */
+    /** Rimuove un prodotto da Firebase */
     async function rimuoviProdotto(id) {
       try {
         const docRef = doc(state.db, `inventario/${GRUPPO_ID}/prodotti`, id);
@@ -438,7 +447,7 @@
       }
     }
 
-    /** Aggiorna un campo del prodotto su Firebase (invariato) */
+    /** Aggiorna un campo del prodotto su Firebase */
     async function updateProductField(id, field, value) {
       const product = state.products.find(p => p.id === id);
       if (!product) return;
@@ -463,7 +472,7 @@
       }
     }
     
-    /** Aggiorna la quantità con +1 o -1 su Firebase (invariato) */
+    /** Aggiorna la quantità con +1 o -1 su Firebase */
     async function updateProductQuantity(id, change) {
       const product = state.products.find(p => p.id === id);
       if (!product) return;
@@ -490,7 +499,25 @@
       }
     }
     
-    /** Copia la lista spesa negli appunti (invariato) */
+    /** Aggiunge/Rimuove forzatamente dalla lista */
+    async function toggleForzaLista(id) {
+      const product = state.products.find(p => p.id === id);
+      if (!product) return;
+      
+      const newState = !(product.forceToLista || false); 
+      
+      try {
+        const docRef = doc(state.db, `inventario/${GRUPPO_ID}/prodotti`, id);
+        await updateDoc(docRef, {
+          forceToLista: newState
+        });
+      } catch (err) {
+        console.error("Errore aggiornando 'forceToLista': ", err);
+        alert("Errore nell'aggiornamento del prodotto.");
+      }
+    }
+    
+    /** Copia la lista spesa negli appunti */
     function copiaListaSpesa() {
         const grouped = getShoppingListGrouped();
         if (grouped.size === 0) {
@@ -503,7 +530,11 @@
         for (let [fornitore, prodotti] of grouped) {
             testoLista += `\n--- Fornitore: ${fornitore} ---\n`;
             prodotti.forEach(prodotto => {
-                 testoLista += `- ${prodotto.nome} (Att: ${prodotto.quantitaAttuale} / Min: ${prodotto.quantitaMinima}) - ${prodotto.unita}\n`;
+                 let nota = '';
+                 if (prodotto.forceToLista === true) {
+                    nota = ' (Aggiunto Manualmente)';
+                 }
+                 testoLista += `- ${prodotto.nome} (Att: ${prodotto.quantitaAttuale} / Min: ${prodotto.quantitaMinima}) - ${prodotto.unita}${nota}\n`;
             });
         }
 
@@ -523,7 +554,7 @@
         });
     }
 
-    // --- FUNZIONI DI RENDER (Aggiornate) ---
+    // --- FUNZIONI DI RENDER ---
 
     function render() {
       renderNav();
@@ -562,19 +593,6 @@
         }
       }
       
-      // Aggiorna lo stile dei pulsanti dentro il dropdown
-      if (state.groupBy === 'categoria') {
-        groupCategoria.classList.add('bg-blue-500', 'text-white');
-        groupCategoria.classList.remove('bg-white', 'shadow-sm', 'dark:bg-gray-600', 'dark:text-gray-200');
-        groupFornitore.classList.add('bg-white', 'shadow-sm', 'dark:bg-gray-600', 'dark:text-gray-200');
-        groupFornitore.classList.remove('bg-blue-500', 'text-white');
-      } else {
-        groupFornitore.classList.add('bg-blue-500', 'text-white');
-        groupFornitore.classList.remove('bg-white', 'shadow-sm', 'dark:bg-gray-600', 'dark:text-gray-200');
-        groupCategoria.classList.add('bg-white', 'shadow-sm', 'dark:bg-gray-600', 'dark:text-gray-200');
-        groupCategoria.classList.remove('bg-blue-500', 'text-white');
-      }
-      
       if (state.inventoryViewMode === 'compatta') {
         viewCompatta.classList.add('bg-blue-500', 'text-white');
         viewCompatta.classList.remove('bg-white', 'shadow-sm', 'dark:bg-gray-600', 'dark:text-gray-200');
@@ -595,23 +613,22 @@
       viewCosti.classList.toggle('hidden', state.currentView !== 'costi');
     }
 
-    /** Helper per le opzioni Unità (invariato) */
+    /** Helper per le opzioni Unità */
     function getUnitOptionsHTML(selectedValue) {
       return unitOptions.map(unita => 
         `<option value="${unita}" ${unita === selectedValue ? 'selected' : ''}>${unita}</option>`
       ).join('');
     }
     
-    /** NUOVO: Helper per le opzioni Stato */
+    /** Helper per le opzioni Stato */
     function getStatusOptionsHTML(selectedValue) {
-      // Assicura un default se il valore è nullo/undefined
       const value = selectedValue || 'disponibile';
       return Object.entries(statusOptions).map(([key, label]) =>
         `<option value="${key}" ${key === value ? 'selected' : ''}>${label}</option>`
       ).join('');
     }
     
-    /** NUOVO: Helper per il badge Stato */
+    /** Helper per il badge Stato */
     function getStatusBadge(status) {
       switch (status) {
         case 'aperto':
@@ -623,10 +640,33 @@
           return ''; // Nessun badge per lo stato di default
       }
     }
+    
+    /** Helper per il pulsante "Aggiungi a Lista" */
+    function createForceListButton(prodotto) {
+      const isOnAutoList = prodotto.quantitaAttuale <= prodotto.quantitaMinima && prodotto.status === 'disponibile';
+      
+      const iconCartPlus = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>`;
+      const iconCartMinus = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9" /></svg>`;
+      const iconCheck = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>`;
+
+      if (isOnAutoList) {
+        return `<button title="Già in lista (automatico)" class="p-2 rounded-md bg-gray-200 text-gray-500 cursor-default dark:bg-gray-600 dark:text-gray-400" disabled>${iconCheck}</button>`;
+      }
+      
+      if (prodotto.forceToLista) {
+        // È stato forzato, mostra "Rimuovi"
+        return `<button title="Rimuovi da lista" data-id="${prodotto.id}" class="force-lista-btn p-2 rounded-md bg-yellow-400 text-yellow-900 hover:bg-yellow-500 transition-colors">${iconCartMinus}</button>`;
+      }
+      
+      // Non è in lista, mostra "Aggiungi"
+      return `<button title="Aggiungi a lista" data-id="${prodotto.id}" class="force-lista-btn p-2 rounded-md bg-green-500 text-white hover:bg-green-600 transition-colors">${iconCartPlus}</button>`;
+    }
+
 
     /** Render inventario */
     function renderInventoryList() {
-      const grouped = getGroupedProducts();
+      const prodotti = getSortedProducts();
+      
       if (state.products.length === 0) {
         inventoryListContainer.innerHTML = `<div class="bg-white p-6 rounded-lg shadow text-center text-gray-500 dark:bg-gray-800 dark:text-gray-400">
           Nessun prodotto nell'inventario. Inizia aggiungendone uno!
@@ -634,18 +674,12 @@
         return;
       }
       
-      let html = '';
-      for (let [groupKey, prodotti] of grouped) {
-        html += `<section>
-          <h2 class="text-xl md:text-2xl font-bold text-gray-700 mt-6 mb-3 border-b-2 border-gray-300 pb-2 capitalize dark:text-gray-200 dark:border-gray-600">
-            ${groupKey}
-          </h2>
+      let html = `
           <div class="grid grid-cols-1 ${state.inventoryViewMode === 'completa' ? 'xl:grid-cols-2' : ''} gap-4">
             ${prodotti.map(prodotto => {
               const borderClass = prodotto.quantitaAttuale <= prodotto.quantitaMinima ? 'border-l-4 border-red-500' : 'border-transparent dark:border-transparent';
               const qtyClass = prodotto.quantitaAttuale <= prodotto.quantitaMinima ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400';
               
-              // MODIFICA: Aggiunto wrapper e badge per lo stato
               const cardTop = `
                 <div class="flex justify-between items-start mb-3">
                   <div class="flex items-center gap-2 w-2/3">
@@ -653,9 +687,12 @@
                       class="editable-input text-lg md:text-xl font-bold text-blue-800 border-b-2 border-transparent focus:border-blue-300 outline-none w-full dark:text-blue-400 dark:bg-transparent dark:focus:border-blue-500">
                     ${getStatusBadge(prodotto.status)}
                   </div>
-                  <button class="remove-btn text-red-500 hover:text-red-700 font-semibold transition-colors text-sm flex-shrink-0 ml-2 dark:hover:text-red-400" data-id="${prodotto.id}">
-                    Rimuovi
-                  </button>
+                  <div class="flex-shrink-0 ml-2 flex items-center space-x-2">
+                    ${createForceListButton(prodotto)}
+                    <button class="remove-btn text-red-500 hover:text-red-700 p-2 rounded-md dark:hover:text-red-400" data-id="${prodotto.id}" title="Rimuovi prodotto">
+                       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
+                  </div>
                 </div>`;
                 
               let cardBottom = '';
@@ -680,21 +717,16 @@
                     </div>
                   </div>`;
               } else {
-                // MODIFICA: Aggiunto campo "Stato" alla griglia
                 cardBottom = `
                   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-3 text-sm text-gray-600 dark:text-gray-400">
-                    <!-- Categoria -->
+                    
+                    <!-- Categoria (RE-INSERITA) -->
                     <div class="flex flex-col">
                       <label class="text-xs font-semibold text-gray-500 dark:text-gray-400">Categoria</label>
                       <input type="text" value="${prodotto.categoria}" data-id="${prodotto.id}" data-field="categoria"
                         class="editable-input border-b border-transparent focus:border-gray-300 outline-none w-full dark:bg-transparent dark:focus:border-gray-500 dark:text-gray-100">
                     </div>
-                    <!-- Fornitore -->
-                    <div class="flex flex-col">
-                      <label class="text-xs font-semibold text-gray-500 dark:text-gray-400">Fornitore</label>
-                      <input type="text" value="${prodotto.fornitore}" data-id="${prodotto.id}" data-field="fornitore"
-                        class="editable-input border-b border-transparent focus:border-gray-300 outline-none w-full dark:bg-transparent dark:focus:border-gray-500 dark:text-gray-100">
-                    </div>
+                    
                     <!-- Costo/Unità -->
                     <div class="flex flex-col">
                       <label class="text-xs font-semibold text-gray-500 dark:text-gray-400">Costo/Unità</label>
@@ -724,7 +756,7 @@
                         ${getUnitOptionsHTML(prodotto.unita)}
                       </select>
                     </div>
-                    <!-- NUOVO: Stato -->
+                    <!-- Stato -->
                     <div class="flex flex-col">
                       <label class="text-xs font-semibold text-gray-500 dark:text-gray-400">Stato</label>
                       <select data-id="${prodotto.id}" data-field="status"
@@ -741,19 +773,17 @@
               </div>`;
               
             }).join('')}
-          </div>
-        </section>`;
-      }
+          </div>`;
       inventoryListContainer.innerHTML = html;
     }
 
-    /** Render lista spesa (invariato) */
+    /** Render lista spesa */
     function renderShoppingList() {
       const grouped = getShoppingListGrouped();
       if (grouped.size === 0) {
         shoppingListContainer.innerHTML = `<div class="text-center text-gray-500 py-10 dark:text-gray-400">
           <p class="text-lg">La tua lista della spesa è vuota!</p>
-          <p class="text-sm md:text-base">I prodotti appariranno qui automaticamente quando la loro quantità scende sotto il minimo.</p>
+          <p class="text-sm md:text-base">I prodotti appariranno qui automaticamente (se sotto il minimo) o se li aggiungi tu manually.</p>
         </div>`;
         copyShoppingListBtn.disabled = true;
         copyShoppingListBtn.classList.add('opacity-50', 'cursor-not-allowed');
@@ -769,7 +799,8 @@
                 <li class="text-gray-800 text-base md:text-lg dark:text-gray-200">
                   <span class="font-semibold">${prodotto.nome}</span>
                   <span class="block text-sm text-gray-600 ml-6 md:ml-2 md:inline dark:text-gray-400">
-                    (Attuale: <strong class="text-red-600 dark:text-red-400">${prodotto.quantitaAttuale}</strong> / Min: ${prodotto.quantitaMinima}) - ${prodotto.unita}
+                    (Attuale: <strong class="${prodotto.quantitaAttuale <= prodotto.quantitaMinima ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'}">${prodotto.quantitaAttuale}</strong> / Min: ${prodotto.quantitaMinima}) - ${prodotto.unita}
+                    ${prodotto.forceToLista ? '<span class="text-xs font-medium bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300 ml-2">Manuale</span>' : ''}
                   </span>
                 </li>
               `).join('')}
@@ -782,7 +813,7 @@
       }
     }
     
-    /** Render per la pagina Costi (invariato) */
+    /** Render per la pagina Costi */
     function renderCosti() {
       if (state.products.length === 0) {
         costReportContainer.innerHTML = `<div class="text-center text-gray-500 py-10 dark:text-gray-400">
@@ -849,12 +880,12 @@
       costReportContainer.innerHTML = totalHtml + html;
     }
     
-    /** Formatta valuta (invariato) */
+    /** Formatta valuta */
     function formatCurrency(value) {
       return (value || 0).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' });
     }
     
-    /** Render badge notifiche (invariato) */
+    /** Render badge notifiche */
     function renderBadge() {
         const grouped = getShoppingListGrouped();
         const totalItems = Array.from(grouped.values()).reduce((acc, prodotti) => acc + prodotti.length, 0);
@@ -867,7 +898,7 @@
         }
     }
     
-    // --- FUNZIONI DARK MODE (Invariate) ---
+    // --- FUNZIONI DARK MODE ---
     function applyTheme(theme) {
         if (theme === 'dark') {
             document.documentElement.classList.add('dark');
@@ -895,7 +926,7 @@
         }
     }
 
-    // --- EVENT LISTENERS (Invariati) ---
+    // --- EVENT LISTENERS ---
 
     btnGoHome.addEventListener('click', () => {
       state.currentView = 'home';
@@ -926,14 +957,6 @@
 
     filtersDropdown.addEventListener('click', (e) => {
         let changed = false;
-        if (e.target.id === 'group-categoria') {
-            state.groupBy = 'categoria';
-            changed = true;
-        }
-        if (e.target.id === 'group-fornitore') {
-            state.groupBy = 'fornitore';
-            changed = true;
-        }
         if (e.target.id === 'view-compatta') {
             state.inventoryViewMode = 'compatta';
             changed = true;
@@ -952,6 +975,13 @@
     addProductForm.addEventListener('submit', aggiungiProdotto);
 
     document.body.addEventListener('click', (e) => {
+      const forceButton = e.target.closest('.force-lista-btn');
+      if (forceButton) {
+        const id = forceButton.dataset.id;
+        toggleForzaLista(id);
+        return;
+      }
+      
       const removeButton = e.target.closest('.remove-btn');
       if (removeButton) {
         const id = removeButton.dataset.id;
@@ -983,11 +1013,7 @@
     document.body.addEventListener('focusout', (e) => {
         if (e.target.classList.contains('editable-input')) {
             const { id, field } = e.target.dataset;
-            // Trova il prodotto nello stato locale per confronto
-            const product = state.products.find(p => p.id === id);
-            if(product && product[field] != e.targe.value) { // Errore di battitura qui!
-                updateProductField(id, field, e.target.value);
-            }
+            updateProductField(id, field, e.target.value);
         }
     });
 
@@ -1015,6 +1041,118 @@
         }
     });
 
+    // --- NUOVE FUNZIONI DI IMPORTAZIONE CSV ---
+    
+    /**
+     * Gestisce il caricamento del file CSV
+     */
+    async function handleCsvUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      loadingOverlay.classList.remove('hidden');
+      loadingText.textContent = 'Lettura file CSV...';
+
+      try {
+        const fileContent = await file.text();
+        const prodottiDaImportare = parseCSV(fileContent);
+        
+        if (prodottiDaImportare.length === 0) {
+           alert("Nessun prodotto valido trovato nel CSV.");
+           loadingOverlay.classList.add('hidden');
+           return;
+        }
+
+        if (!confirm(`Trovati ${prodottiDaImportare.length} prodotti. Vuoi importarli ora? (Questa operazione è da fare una sola volta)`)) {
+           loadingOverlay.classList.add('hidden');
+           csvFileInput.value = ''; // Resetta l'input
+           return;
+        }
+        
+        await importaProdottiDaCsv(prodottiDaImportare);
+
+      } catch (err) {
+        console.error("Errore during CSV import:", err);
+        alert("ERRORE: " + err.message);
+        loadingOverlay.classList.add('hidden');
+      } finally {
+        csvFileInput.value = ''; // Resetta l'input file in ogni caso
+      }
+    }
+    
+    /**
+     * Esegue il parsing del testo CSV e lo trasforma in un array di oggetti
+     */
+    function parseCSV(csvText) {
+      const righe = csvText.split('\n').filter(Boolean); // Divide per riga e rimuove righe vuote
+      if (righe.length <= 1) throw new Error("Il file CSV è vuoto o contiene solo l'intestazione.");
+
+      // Pulisce e mappa le intestazioni (la prima riga)
+      const intestazione = righe[0].split(',').map(h => h.trim().toLowerCase());
+      
+      const nomeIndex = intestazione.indexOf('nome');
+      const categoriaIndex = intestazione.indexOf('categoria');
+      const fornitoreIndex = intestazione.indexOf('fornitore');
+
+      if (nomeIndex === -1 || categoriaIndex === -1 || fornitoreIndex === -1) {
+        throw new Error("Intestazioni CSV non valide. Assicurati che la prima riga del file contenga 'nome', 'categoria' e 'fornitore'.");
+      }
+
+      const prodotti = [];
+      for (let i = 1; i < righe.length; i++) {
+        const campi = righe[i].split(',');
+        
+        // Pulisce i campi da eventuali spazi bianchi
+        const nome = campi[nomeIndex]?.trim();
+        const categoria = campi[categoriaIndex]?.trim();
+        const fornitore = campi[fornitoreIndex]?.trim();
+
+        if (nome && categoria && fornitore) {
+          prodotti.push({ nome, categoria, fornitore });
+        }
+      }
+      return prodotti;
+    }
+
+    /**
+     * Esegue il loop di caricamento su Firebase
+     */
+    async function importaProdottiDaCsv(prodottiDaImportare) {
+      loadingText.textContent = `Importazione di ${prodottiDaImportare.length} prodotti...`;
+      let count = 0;
+      for (const item of prodottiDaImportare) {
+        const prodottoCompleto = {
+          nome: item.nome,
+          categoria: item.categoria,
+          fornitore: item.fornitore,
+          costoUnita: 0,
+          quantitaAttuale: 0,
+          quantitaMinima: 1, // Default
+          unita: 'pz', // Default
+          status: 'disponibile', // Default
+          forceToLista: false
+        };
+        
+        try {
+          await addDoc(state.collectionRef, prodottoCompleto);
+          count++;
+          loadingText.textContent = `Importazione... (${count}/${prodottiDaImportare.length})`;
+        } catch (err) {
+          console.error("Errore importando prodotto: ", item.nome, err);
+        }
+      }
+      
+      loadingText.textContent = `Importazione completata! ${count} prodotti aggiunti.`;
+      setTimeout(() => {
+        // Il listener onSnapshot aggiornerà automaticamente la UI e nasconderà il loader
+        // (Nascondiamo comunque il loader per sicurezza, nel caso onSnapshot non scatti)
+        loadingOverlay.classList.add('hidden');
+      }, 2000);
+    }
+    
+    // MODIFICA: Aggiungi listener per il nuovo input file
+    csvFileInput.addEventListener('change', handleCsvUpload);
+
 
     // --- INIZIALIZZAZIONE FIREBASE ---
     
@@ -1037,7 +1175,15 @@
           });
           
           if (!loadingOverlay.classList.contains('hidden')) {
+             loadingText.textContent = 'Caricamento dati...'; // Resetta il testo
              loadingOverlay.classList.add('hidden');
+          }
+          
+          // MODIFICA: Controlla se mostrare il pulsante di importazione CSV
+          if (state.products.length === 0) {
+            importContainer.classList.remove('hidden');
+          } else {
+            importContainer.classList.add('hidden');
           }
           
           render(); // Ridisegna tutto con i nuovi dati
