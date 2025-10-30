@@ -1581,147 +1581,176 @@
       });
     }
 
-    /**
-     * NUOVO: Disegna il report dei costi per i VINI.
-     */
-    function renderWineCostReport() {
-      const container = dom.reportVini.container;
+   /**
+ * NUOVO: Disegna il report dei costi per i VINI. (Versione con Accordion)
+ */
+function renderWineCostReport() {
+  const container = dom.reportVini.container;
 
-      // 1. Raggruppa vini per REGIONE
-      const groupedByRegion = state.vini.reduce((acc, v) => {
-        const region = v.regione || 'Senza Regione';
-        if (!acc[region]) {
-          acc[region] = [];
-        }
-        acc[region].push(v);
-        return acc;
-      }, {});
-      
-      if (state.vini.length === 0) {
-        container.innerHTML = `<p class="text-center text-gray-500 dark:text-gray-400 py-10 text-lg">
-          Nessun vino nella cantina per calcolare i costi.
-        </p>`;
-        return;
-      }
-
-      container.innerHTML = ''; // Pulisci
-      let granTotaleValore = 0;
-      let granTotaleVendita = 0;
-      let granTotaleMargine = 0;
-      let granTotaleBottiglie = 0;
-
-      // 2. Itera sulle regioni e crea le tabelle
-      Object.keys(groupedByRegion).sort().forEach(region => {
-        const wines = groupedByRegion[region];
-        let totaleRegioneValore = 0;
-        let totaleRegioneVendita = 0;
-        let totaleRegioneMargine = 0;
-        let totaleRegioneBottiglie = 0;
-        
-        const groupDiv = document.createElement('div');
-        groupDiv.className = "mb-8";
-        
-        const title = document.createElement('h3');
-        title.className = "text-xl font-semibold text-gray-700 border-b border-gray-300 pb-2 mb-3 dark:text-gray-200 dark:border-gray-700";
-        title.textContent = region;
-        groupDiv.appendChild(title);
-
-        const table = document.createElement('table');
-        table.className = "w-full min-w-full divide-y divide-gray-200 dark:divide-gray-700";
-        table.innerHTML = `
-          <thead class="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Vino (Cantina)</th>
-              <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Q.tà</th>
-              <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Valore (Costo)</th>
-              <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Valore (Vendita)</th>
-              <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Margine Tot.</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-          </tbody>
-          <tfoot class="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              <td class="px-4 py-2 text-right text-sm font-bold text-gray-700 dark:text-gray-100">Totale Regione</td>
-              <td id="totale-qta" class="px-4 py-2 text-right text-sm font-bold text-gray-900 dark:text-white"></td>
-              <td id="totale-valore" class="px-4 py-2 text-right text-sm font-bold text-gray-900 dark:text-white"></td>
-              <td id="totale-vendita" class="px-4 py-2 text-right text-sm font-bold text-gray-900 dark:text-white"></td>
-              <td id="totale-margine" class="px-4 py-2 text-right text-sm font-bold text-gray-900 dark:text-white"></td>
-            </tr>
-          </tfoot>
-        `;
-        
-        const tbody = table.querySelector('tbody');
-        
-        wines.forEach(v => {
-          const costo = parseFloat(v.costo) || 0;
-          const vendita = parseFloat(v.vendita) || 0;
-          const quantita = parseInt(v.quantita) || 0;
-          
-          const valoreCosto = costo * quantita;
-          const valoreVendita = vendita * quantita;
-          const valoreMargine = valoreVendita - valoreCosto;
-
-          totaleRegioneValore += valoreCosto;
-          totaleRegioneVendita += valoreVendita;
-          totaleRegioneMargine += valoreMargine;
-          totaleRegioneBottiglie += quantita;
-          
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td class="px-4 py-2 text-sm font-medium text-gray-900 dark:text-gray-100">
-              ${v.nome} ${v.anno}
-              <span class="text-xs text-gray-500 block dark:text-gray-400">${v.cantina || 'Sconosciuta'}</span>
-            </td>
-            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200 text-right">${quantita} btg.</td>
-            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-right">${formatCurrency(valoreCosto)}</td>
-            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200 text-right">${formatCurrency(valoreVendita)}</td>
-            <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${valoreMargine > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'} text-right">
-              ${formatCurrency(valoreMargine)}
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-        
-        table.querySelector('#totale-qta').textContent = `${totaleRegioneBottiglie} btg.`;
-        table.querySelector('#totale-valore').textContent = formatCurrency(totaleRegioneValore);
-        table.querySelector('#totale-vendita').textContent = formatCurrency(totaleRegioneVendita);
-        table.querySelector('#totale-margine').textContent = formatCurrency(totaleRegioneMargine);
-        groupDiv.appendChild(table);
-        container.appendChild(groupDiv);
-        
-        granTotaleValore += totaleRegioneValore;
-        granTotaleVendita += totaleRegioneVendita;
-        granTotaleMargine += totaleRegioneMargine;
-        granTotaleBottiglie += totaleRegioneBottiglie;
-      });
-      
-      // 3. Aggiungi Gran Totale
-      const granTotaleDiv = document.createElement('div');
-      granTotaleDiv.className = "mt-8 pt-4 border-t-2 border-indigo-600 space-y-2";
-      
-      granTotaleDiv.innerHTML = `
-        <div class="flex justify-between items-center">
-          <span class="text-xl font-bold text-gray-800 dark:text-gray-100">Totale Bottiglie:</span>
-          <span class="text-xl font-bold text-indigo-700 dark:text-indigo-400">${granTotaleBottiglie} btg.</span>
-        </div>
-        <div class="flex justify-between items-center">
-          <span class="text-xl font-bold text-gray-800 dark:text-gray-100">Valore Totale (Costo):</span>
-          <span class="text-xl font-bold text-indigo-700 dark:text-indigo-400">${formatCurrency(granTotaleValore)}</span>
-        </div>
-        <div class="flex justify-between items-center">
-          <span class="text-xl font-bold text-gray-800 dark:text-gray-100">Valore Totale (Vendita):</span>
-          <span class="text-xl font-bold text-indigo-700 dark:text-indigo-400">${formatCurrency(granTotaleVendita)}</span>
-        </div>
-        <div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-300 dark:border-gray-600">
-          <span class="text-2xl font-bold text-gray-800 dark:text-gray-100">Margine Totale Cantina:</span>
-          <span class="text-2xl font-bold ${granTotaleMargine > 0 ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}">
-            ${formatCurrency(granTotaleMargine)}
-          </span>
-        </div>
-      `;
-      container.appendChild(granTotaleDiv);
+  // 1. Raggruppa vini per REGIONE
+  const groupedByRegion = state.vini.reduce((acc, v) => {
+    const region = v.regione || 'Senza Regione';
+    if (!acc[region]) {
+      acc[region] = [];
     }
+    acc[region].push(v);
+    return acc;
+  }, {});
+  
+  if (state.vini.length === 0) {
+    container.innerHTML = `<p class="text-center text-gray-500 dark:text-gray-400 py-10 text-lg">
+      Nessun vino nella cantina per calcolare i costi.
+    </p>`;
+    return;
+  }
+
+  container.innerHTML = ''; // Pulisci
+  let granTotaleValore = 0;
+  let granTotaleVendita = 0;
+  let granTotaleMargine = 0;
+  let granTotaleBottiglie = 0;
+
+  // 2. Itera sulle regioni e crea le tabelle
+  Object.keys(groupedByRegion).sort().forEach(region => {
+    const wines = groupedByRegion[region];
+    let totaleRegioneValore = 0;
+    let totaleRegioneVendita = 0;
+    let totaleRegioneMargine = 0;
+    let totaleRegioneBottiglie = 0;
+    
+    const groupDiv = document.createElement('div');
+    groupDiv.className = "mb-4"; // MODIFICATO: Ridotto il margine inferiore
+    
+    // --- MODIFICATO: Trasformiamo il titolo in un pulsante Accordion ---
+    const titleButton = document.createElement('button');
+    titleButton.type = 'button';
+    titleButton.className = "text-xl font-semibold text-gray-700 border-b border-gray-300 pb-2 mb-3 dark:text-gray-200 dark:border-gray-700 flex justify-between items-center w-full transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-t-lg";
+    
+    // NUOVO: Aggiungiamo un'icona (chevron) per l'accordion
+    titleButton.innerHTML = `
+      <span>${region}</span>
+      <svg class="w-5 h-5 transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+      </svg>
+    `;
+    groupDiv.appendChild(titleButton);
+    // --- FINE MODIFICA TITOLO ---
+
+    // --- NUOVO: Creiamo un wrapper per la tabella ---
+    // Questo wrapper serve sia per l'overflow (Bug 1) che per l'accordion (Bug 2)
+    const contentWrapper = document.createElement('div');
+    contentWrapper.className = "overflow-x-auto rounded-b-lg shadow-md hidden"; // 'hidden' per partire chiuso
+
+    const table = document.createElement('table');
+    table.className = "w-full min-w-full divide-y divide-gray-200 dark:divide-gray-700";
+    table.innerHTML = `
+      <thead class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Vino (Cantina)</th>
+          <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Q.tà</th>
+          <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Valore (Costo)</th>
+          <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Valore (Vendita)</th>
+          <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Margine Tot.</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+      </tbody>
+      <tfoot class="bg-gray-50 dark:bg-gray-700">
+        <tr>
+          <td class="px-4 py-2 text-right text-sm font-bold text-gray-700 dark:text-gray-100">Totale Regione</td>
+          <td id="totale-qta" class="px-4 py-2 text-right text-sm font-bold text-gray-900 dark:text-white"></td>
+          <td id="totale-valore" class="px-4 py-2 text-right text-sm font-bold text-gray-900 dark:text-white"></td>
+          <td id="totale-vendita" class="px-4 py-2 text-right text-sm font-bold text-gray-900 dark:text-white"></td>
+          <td id="totale-margine" class="px-4 py-2 text-right text-sm font-bold text-gray-900 dark:text-white"></td>
+        </tr>
+      </tfoot>
+    `;
+    
+    const tbody = table.querySelector('tbody');
+    
+    wines.forEach(v => {
+      const costo = parseFloat(v.costo) || 0;
+      const vendita = parseFloat(v.vendita) || 0;
+      const quantita = parseInt(v.quantita) || 0;
+      
+      const valoreCosto = costo * quantita;
+      const valoreVendita = vendita * quantita;
+      const valoreMargine = valoreVendita - valoreCosto;
+
+      totaleRegioneValore += valoreCosto;
+      totaleRegioneVendita += valoreVendita;
+      totaleRegioneMargine += valoreMargine;
+      totaleRegioneBottiglie += quantita;
+      
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="px-4 py-2 text-sm font-medium text-gray-900 dark:text-gray-100">
+          ${v.nome} ${v.anno}
+          <span class="text-xs text-gray-500 block dark:text-gray-400">${v.cantina || 'Sconosciuta'}</span>
+        </td>
+        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200 text-right">${quantita} btg.</td>
+        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-right">${formatCurrency(valoreCosto)}</td>
+        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200 text-right">${formatCurrency(valoreVendita)}</td>
+        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${valoreMargine > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'} text-right">
+          ${formatCurrency(valoreMargine)}
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+    
+    table.querySelector('#totale-qta').textContent = `${totaleRegioneBottiglie} btg.`;
+    table.querySelector('#totale-valore').textContent = formatCurrency(totaleRegioneValore);
+    table.querySelector('#totale-vendita').textContent = formatCurrency(totaleRegioneVendita);
+    table.querySelector('#totale-margine').textContent = formatCurrency(totaleRegioneMargine);
+    
+    // MODIFICATO: Aggiungiamo la tabella al wrapper, e il wrapper al gruppo
+    contentWrapper.appendChild(table);
+    groupDiv.appendChild(contentWrapper);
+    container.appendChild(groupDiv);
+    
+    // --- NUOVO: Logica per far funzionare l'accordion ---
+    titleButton.addEventListener('click', () => {
+      // Mostra/Nascondi la tabella
+      contentWrapper.classList.toggle('hidden');
+      
+      // Ruota l'icona
+      const icon = titleButton.querySelector('svg');
+      icon.classList.toggle('rotate-90');
+    });
+    // --- FINE LOGICA ACCORDION ---
+    
+    granTotaleValore += totaleRegioneValore;
+    granTotaleVendita += totaleRegioneVendita;
+    granTotaleMargine += totaleRegioneMargine;
+    granTotaleBottiglie += totaleRegioneBottiglie;
+  });
+  
+  // 3. Aggiungi Gran Totale (Nessuna modifica qui)
+  const granTotaleDiv = document.createElement('div');
+  granTotaleDiv.className = "mt-8 pt-4 border-t-2 border-indigo-600 space-y-2";
+  
+  granTotaleDiv.innerHTML = `
+    <div class="flex justify-between items-center">
+      <span class="text-xl font-bold text-gray-800 dark:text-gray-100">Totale Bottiglie:</span>
+      <span class="text-xl font-bold text-indigo-700 dark:text-indigo-400">${granTotaleBottiglie} btg.</span>
+    </div>
+    <div class="flex justify-between items-center">
+      <span class="text-xl font-bold text-gray-800 dark:text-gray-100">Valore Totale (Costo):</span>
+      <span class="text-xl font-bold text-indigo-700 dark:text-indigo-400">${formatCurrency(granTotaleValore)}</span>
+    </div>
+    <div class="flex justify-between items-center">
+      <span class="text-xl font-bold text-gray-800 dark:text-gray-100">Valore Totale (Vendita):</span>
+      <span class="text-xl font-bold text-indigo-700 dark:text-indigo-400">${formatCurrency(granTotaleVendita)}</span>
+    </div>
+    <div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-300 dark:border-gray-600">
+      <span class="text-2xl font-bold text-gray-800 dark:text-gray-100">Margine Totale Cantina:</span>
+      <span class="text-2xl font-bold ${granTotaleMargine > 0 ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}">
+        ${formatCurrency(granTotaleMargine)}
+      </span>
+    </div>
+  `;
+  container.appendChild(granTotaleDiv);
+}
 
 
     /**
