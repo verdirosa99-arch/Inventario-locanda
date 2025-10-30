@@ -2520,109 +2520,124 @@ if (downloadButton) {
   console.error('ERRORE: Impossibile trovare il pulsante "btn-scarica-pdf-vini" da collegare.');
 }
 
-// 2. NUOVA Funzione PDF (Questa SOSTITUISCE la vecchia)
+// --- INIZIO: NUOVA Logica per Scaricare PDF (Versione Corretta) ---
+
+// (Il codice per collegare il pulsante va bene e rimane dov'è)
+
+// 2. NUOVA Funzione PDF (Questa SOSTITUISCE interamente la vecchia)
 function scaricaReportCostiViniPDF() {
   console.log('Avvio creazione PDF con i dati da state.vini...');
 
-  // Carica le librerie (assicurati di averle messe nell'HEAD)
-  const { jsPDF } = window.jspdf;
-  const autoTable = window.jspdf.plugin.autotable;
+  try {
+    // 1. Carica la libreria PRINCIPALE
+    // Usiamo window.jspdf.jsPDF che è più sicuro
+    const jsPDF = window.jspdf.jsPDF;
 
-  if (!jsPDF || !autoTable) {
-    console.error('jsPDF o autoTable non sono caricate!');
-    alert('Errore: Impossibile caricare le librerie PDF. Controlla i link nell\'HEAD.');
-    return;
+    if (typeof jsPDF === 'undefined') {
+      console.error('jsPDF non è caricata! Controlla lo script nella <head>.');
+      alert('Errore: Impossibile caricare la libreria PDF.');
+      return;
+    }
+
+    // 2. Crea il documento
+    const doc = new jsPDF();
+    
+    // 3. Controlla se il PLUGIN 'autoTable' è stato caricato
+    // Il plugin si "attacca" al documento. Se non c'è, doc.autoTable sarà undefined.
+    if (typeof doc.autoTable === 'undefined') {
+      console.error('Il plugin jsPDF-autoTable non è caricato! Controlla il secondo script nella <head>.');
+      alert('Errore: Impossibile caricare il plugin per le tabelle PDF.');
+      return;
+    }
+
+    // 4. Controlla se ci sono dati nello stato
+    if (!state.vini || state.vini.length === 0) {
+      alert('Nessun dato sui vini da esportare.');
+      return;
+    }
+
+    // 5. Definisci le colonne del PDF
+    const head = [[
+      'Nome Vino', 
+      'Cantina', 
+      'Regione', 
+      'Anno', 
+      'Q.tà', 
+      'Costo Acq. (€)', 
+      'Prezzo Vend. (€)', 
+      'Margine (€)'
+    ]];
+
+    // 6. Prepara le righe del PDF (il corpo)
+    const viniOrdinati = [...state.vini].sort((a, b) => {
+      const regA = a.regione || 'Senza Regione';
+      const regB = b.regione || 'Senza Regione';
+      return regA.localeCompare(regB);
+    });
+    
+    let totaleValoreAcquisto = 0;
+    let totaleValoreVendita = 0;
+    let totaleQuantita = 0;
+
+    const body = viniOrdinati.map(v => {
+      const costo = v.costo || 0;
+      const vendita = v.vendita || 0;
+      const quantita = v.quantita || 0;
+      const margine = (vendita - costo) * quantita;
+
+      totaleValoreAcquisto += costo * quantita;
+      totaleValoreVendita += vendita * quantita;
+      totaleQuantita += quantita;
+
+      return [
+        v.nome,
+        v.cantina || '-',
+        v.regione || '-',
+        v.anno || '-',
+        quantita,
+        costo.toFixed(2),
+        vendita.toFixed(2),
+        margine.toFixed(2)
+      ];
+    });
+    
+    // 7. Calcola i totali per il piè di pagina
+    const totaleMargineComplessivo = totaleValoreVendita - totaleValoreAcquisto;
+    
+    const foot = [[
+      'TOTALI',
+      '', // cantina
+      '', // regione
+      '', // anno
+      totaleQuantita,
+      totaleValoreAcquisto.toFixed(2),
+      totaleValoreVendita.toFixed(2),
+      totaleMargineComplessivo.toFixed(2)
+    ]];
+
+    // 8. Crea la tabella nel PDF
+    doc.autoTable({
+      head: head,
+      body: body,
+      foot: foot, 
+      startY: 22,
+      theme: 'grid',
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [22, 78, 99], textColor: 255, fontStyle: 'bold' },
+      footStyles: { fillColor: [241, 245, 249], textColor: 0, fontStyle: 'bold' } 
+    });
+
+    // 9. Salva il file PDF
+    doc.save('report-vini-completo.pdf');
+    console.log('PDF creato e salvato.');
+
+  } catch (error) {
+    console.error('Errore imprevisto durante la creazione del PDF:', error);
+    alert('Si è verificato un errore sconosciuto. Controlla la console (F12).');
   }
-  
-  // Controlla se ci sono dati nello stato
-  if (!state.vini || state.vini.length === 0) {
-    alert('Nessun dato sui vini da esportare.');
-    return;
-  }
-
-  // Crea un nuovo documento PDF
-  const doc = new jsPDF();
-  doc.text("Report Costi e Margini Cantina", 14, 16);
-
-  // 1. Definisci le colonne del PDF
-  const head = [[
-    'Nome Vino', 
-    'Cantina', 
-    'Regione', 
-    'Anno', 
-    'Q.tà', 
-    'Costo Acq. (€)', 
-    'Prezzo Vend. (€)', 
-    'Margine (€)'
-  ]];
-
-  // 2. Prepara le righe del PDF (il corpo)
-  // Ordiniamo i vini per Regione, come nel report visivo
-  const viniOrdinati = [...state.vini].sort((a, b) => {
-    const regA = a.regione || 'Senza Regione';
-    const regB = b.regione || 'Senza Regione';
-    return regA.localeCompare(regB);
-  });
-  
-  let totaleValoreAcquisto = 0;
-  let totaleValoreVendita = 0;
-  let totaleQuantita = 0;
-
-  const body = viniOrdinati.map(v => {
-    const costo = v.costo || 0;
-    const vendita = v.vendita || 0;
-    const quantita = v.quantita || 0;
-    const margine = (vendita - costo) * quantita;
-
-    // Accumula i totali
-    totaleValoreAcquisto += costo * quantita;
-    totaleValoreVendita += vendita * quantita;
-    totaleQuantita += quantita;
-
-    return [
-      v.nome,
-      v.cantina || '-',
-      v.regione || '-',
-      v.anno || '-',
-      quantita,
-      costo.toFixed(2),
-      vendita.toFixed(2),
-      margine.toFixed(2) // Margine totale per quella riga
-    ];
-  });
-  
-  // 3. Calcola i totali per il piè di pagina
-  const totaleMargineComplessivo = totaleValoreVendita - totaleValoreAcquisto;
-  
-  const foot = [[
-    'TOTALI',
-    '', // cantina
-    '', // regione
-    '', // anno
-    totaleQuantita,
-    totaleValoreAcquisto.toFixed(2),
-    totaleValoreVendita.toFixed(2),
-    totaleMargineComplessivo.toFixed(2)
-  ]];
-
-  // 4. Crea la tabella nel PDF
-  doc.autoTable({
-    head: head,
-    body: body,
-    foot: foot, // Aggiungiamo la riga dei totali
-    startY: 22,
-    theme: 'grid',
-    styles: { fontSize: 8, cellPadding: 2 },
-    headStyles: { fillColor: [22, 78, 99], textColor: 255, fontStyle: 'bold' }, // Blu scuro
-    footStyles: { fillColor: [241, 245, 249], textColor: 0, fontStyle: 'bold' }  // Grigio chiaro
-  });
-
-  // 5. Salva il file PDF
-  doc.save('report-vini-completo.pdf');
-  console.log('PDF creato e salvato.');
 }
 
-// --- FINE: NUOVA Logica per Scaricare PDF Report Vini ---
+// --- FINE: NUOVA Logica per Scaricare PDF (Versione Corretta) ---
   </script>
 
 </body>
