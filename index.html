@@ -2507,15 +2507,18 @@
     initApp();
 // --- INIZIO: NUOVA Logica per Scaricare PDF Report Vini ---
 
-// 1. Collega la funzione al pulsante
-// (Questo codice dovrebbe esserci già, ma controlla)
-document.addEventListener('DOMContentLoaded', (event) => {
-  const downloadButton = document.getElementById('btn-scarica-pdf-vini');
-  if (downloadButton) {
-    downloadButton.addEventListener('click', scaricaReportCostiViniPDF);
-  }
-});
+// 1. Collega la funzione al pulsante (Senza "DOMContentLoaded")
+// Lo colleghiamo subito, perché lo script è a fine pagina e il pulsante esiste già.
 
+const downloadButton = document.getElementById('btn-scarica-pdf-vini');
+
+if (downloadButton) {
+  // Trovato! Attacchiamo il filo.
+  downloadButton.addEventListener('click', scaricaReportCostiViniPDF);
+} else {
+  // Questo ci aiuta a capire se ancora non lo trova
+  console.error('ERRORE: Impossibile trovare il pulsante "btn-scarica-pdf-vini" da collegare.');
+}
 
 // 2. NUOVA Funzione PDF (Questa SOSTITUISCE la vecchia)
 function scaricaReportCostiViniPDF() {
