@@ -74,13 +74,11 @@
             </svg>
           </button>
           
-          <!-- Dark Mode Toggle RIMOSSO -->
-          
         </div>
       </div>
 
       <!-- Wrapper per le schede di navigazione -->
-      <nav id="main-nav-tabs" class="flex space-x-2 mt-4 hidden">
+      <nav id="main-nav-tabs" class="flex flex-wrap space-x-2 mt-4 hidden">
         <button id="nav-inventario"
           class="px-3 py-2 md:px-4 text-sm md:text-base rounded-lg font-semibold shadow-md transition-all duration-200 bg-blue-600 text-white">
           Inventario
@@ -96,6 +94,11 @@
           class="px-3 py-2 md:px-4 text-sm md:text-base rounded-lg font-semibold shadow-md transition-all duration-200 bg-white text-gray-700 dark:bg-gray-700 dark:text-gray-200">
           Cantina Vini
         </button>
+         <!-- NUOVO: Pulsante Report Vini -->
+        <button id="nav-report-vini"
+          class="px-3 py-2 md:px-4 text-sm md:text-base rounded-lg font-semibold shadow-md transition-all duration-200 bg-white text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+          Report Vini
+        </button>
       </nav>
     </header>
 
@@ -106,7 +109,7 @@
       <div id="view-home">
         <h2 class="text-2xl font-semibold text-gray-700 mb-6 dark:text-gray-200">Menu Principale</h2>
         <!-- MODIFICATO: grid-cols-2 per un layout bilanciato -->
-        <div class="grid grid-cols-2 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
           <!-- Bottone Inventario -->
           <button id="btn-go-inventario" class="flex flex-col items-center justify-center bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center dark:bg-gray-800 dark:hover:shadow-lg dark:hover:shadow-gray-700/50">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-blue-600 dark:text-blue-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -130,8 +133,8 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-green-600 dark:text-green-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
-            <span class="text-xl font-semibold text-gray-800 dark:text-gray-100">Report Costi</span>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Visualizza valore inventario</p>
+            <span class="text-xl font-semibold text-gray-800 dark:text-gray-100">Report Inventario</span>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Valore inventario prodotti</p>
           </button>
 
           <!-- NUOVO: Bottone Cantina Vini -->
@@ -142,6 +145,16 @@
             <span class="text-xl font-semibold text-gray-800 dark:text-gray-100">Cantina Vini</span>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Gestisci la tua cantina</p>
           </button>
+          
+          <!-- NUOVO: Bottone Report Vini -->
+          <button id="btn-go-report-vini" class="flex flex-col items-center justify-center bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center dark:bg-gray-800 dark:hover:shadow-lg dark:hover:shadow-gray-700/50">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-indigo-600 dark:text-indigo-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2z" />
+            </svg>
+            <span class="text-xl font-semibold text-gray-800 dark:text-gray-100">Report Vini</span>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Valore e margini cantina</p>
+          </button>
+
         </div>
 
         <!-- Bottoni CSV (rimangono full-width) -->
@@ -307,19 +320,30 @@
             </svg>
           </div>
 
-          <!-- Lista Vini (Layout a Griglia) -->
-          <div id="wine-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <!-- Contenuto generato da JS -->
-            <p id="no-wines-message" class="text-center text-gray-500 dark:text-gray-400 py-10 text-lg hidden md:col-span-2 lg:col-span-3">
+          <!-- MODIFICATO: Lista Vini (Layout a Tendina) -->
+          <!-- Rimosse le classi grid, aggiunto space-y-4 -->
+          <div id="wine-list-container" class="space-y-4">
+            <!-- Contenuto generato da JS (ora saranno le tendine) -->
+            <p id="no-wines-message" class="text-center text-gray-500 dark:text-gray-400 py-10 text-lg hidden">
               Nessun vino nella cantina.
             </p>
-            <p id="no-search-results-wines-message" class="text-center text-gray-500 dark:text-gray-400 py-10 text-lg hidden md:col-span-2 lg:col-span-3">
+            <p id="no-search-results-wines-message" class="text-center text-gray-500 dark:text-gray-400 py-10 text-lg hidden">
               Nessun vino trovato.
             </p>
           </div>
         </div>
       </div>
       
+      <!-- NUOVA VISTA: Report Costi Vini -->
+      <div id="view-report-vini" class="hidden">
+        <div class="bg-white p-4 md:p-6 rounded-lg shadow-md dark:bg-gray-800">
+          <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6 dark:text-gray-100">Report Costi e Margini Cantina</h2>
+          <div id="wine-cost-report-container" class="space-y-8">
+            <!-- Contenuto generato da JS -->
+          </div>
+        </div>
+      </div>
+
     </main>
 
   </div>
@@ -490,7 +514,7 @@
 
   <!-- ================== Inizio Script JS ================== -->
   <script type="module">
-    // --- VERSIONE SCRIPT: 2.3 (con Cantina Vini) ---
+    // --- VERSIONE SCRIPT: 2.4 (Cantina a tendina + Report Vini) ---
 
     // 2. Importa le funzioni di Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
@@ -503,7 +527,6 @@
     } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
 
     // --- Passaggio 1: Configurazione Firebase ---
-    // QUESTA È LA TUA CONFIGURAZIONE (già inserita)
     const firebaseConfig = {
       apiKey: "AIzaSyDWS8urdhG9RdS62rihj0FBPV38aWUclGQ",
       authDomain: "inventario-a52a4.firebaseapp.com",
@@ -515,8 +538,6 @@
     };
 
     // --- Passaggio 2: ID Gruppo Condiviso ---
-    // Questo ID identifica il tuo inventario. 
-    // Se il tuo collega usa lo stesso link, vedrà gli stessi dati.
     const GRUPPO_ID = "inventario-segreto-123";
 
     // --- Variabili Globali ---
@@ -529,13 +550,14 @@
     const state = {
       products: [],         // Array di tutti i prodotti
       vini: [],             // NUOVO: Array di tutti i vini
-      view: 'home',         // 'home', 'inventario', 'listaSpesa', 'costi', 'cantina'
-      groupBy: 'categoria', // 'categoria' (rimosso fornitore)
+      view: 'home',         // 'home', 'inventario', 'listaSpesa', 'costi', 'cantina', 'reportVini'
+      groupBy: 'categoria', 
       inventoryView: 'compatta', // 'compatta', 'completa'
       shoppingListManual: {}, // Prodotti aggiunti/rimossi manually { id: 'add'/'remove' }
       searchTerm: '',         // Termine di ricerca
       searchTermVini: '',   // NUOVO: Termine di ricerca per i vini
       sortBy: 'nome-asc',   // NUOVO: Criterio di ordinamento
+      expandedRegions: new Set(), // NUOVO: Per lo stato tendina della cantina
     };
 
     // Selettori Elementi DOM (raggruppati per comodità)
@@ -554,8 +576,8 @@
         navInventario: document.getElementById('nav-inventario'),
         navListaSpesa: document.getElementById('nav-listaSpesa'),
         navCantina: document.getElementById('nav-cantina'), // NUOVO
+        navReportVini: document.getElementById('nav-report-vini'), // NUOVO
         shoppingListBadge: document.getElementById('shopping-list-badge'),
-        // themeToggle RIMOSSO
       },
       views: {
         home: document.getElementById('view-home'),
@@ -563,12 +585,14 @@
         listaSpesa: document.getElementById('view-listaSpesa'),
         costi: document.getElementById('view-costi'),
         cantina: document.getElementById('view-cantina'), // NUOVO
+        reportVini: document.getElementById('view-report-vini'), // NUOVO
       },
       home: {
         goInventario: document.getElementById('btn-go-inventario'),
         goListaSpesa: document.getElementById('btn-go-listaspesa'),
         goCosti: document.getElementById('btn-go-costi'),
         goCantina: document.getElementById('btn-go-cantina'), // NUOVO
+        goReportVini: document.getElementById('btn-go-report-vini'), // NUOVO
         showCsvUpload: document.getElementById('btn-show-csv-upload'),
         csvFileInput: document.getElementById('csv-file-input'),
         showCsvUploadVini: document.getElementById('btn-show-csv-upload-vini'), // NUOVO
@@ -599,6 +623,10 @@
       },
       costi: {
         container: document.getElementById('cost-report-container'),
+      },
+      // NUOVO: Selettori Report Vini
+      reportVini: {
+          container: document.getElementById('wine-cost-report-container'),
       },
       formModal: {
         overlay: document.getElementById('form-modal-overlay'),
@@ -674,8 +702,6 @@
         // 3. Inizializza Listener UI
         initUIListeners();
         
-        // 4. Inizializza Dark Mode (RIMOSSO, gestito da OS)
-
       } catch (error) {
         console.error("Errore inizializzazione Firebase: ", error);
         showCustomAlert('Errore Critico', `Impossibile inizializzare Firebase: ${error.message}`, 'error');
@@ -701,9 +727,6 @@
           ...doc.data()
         }));
         
-        // NON ordiniamo più qui, lo facciamo nel render
-        // state.products.sort((a, b) => a.nome.localeCompare(b.nome));
-
         dom.loadingOverlay.style.display = 'none'; // Nascondi overlay
         render(); // Ridisegna tutto
 
@@ -732,9 +755,6 @@
         
         // Ordina alfabeticamente di default (verrà ri-ordinato nel render se serve)
         state.vini.sort((a, b) => a.nome.localeCompare(b.nome));
-
-        // Non nascondere il loading overlay qui, 
-        // potrebbe essere già stato nascosto da attachProductsListener
         render(); // Ridisegna tutto
 
       }, (error) => {
@@ -751,12 +771,14 @@
       dom.header.navInventario.addEventListener('click', () => updateState({ view: 'inventario' }));
       dom.header.navListaSpesa.addEventListener('click', () => updateState({ view: 'listaSpesa' }));
       dom.header.navCantina.addEventListener('click', () => updateState({ view: 'cantina' })); // NUOVO
+      dom.header.navReportVini.addEventListener('click', () => updateState({ view: 'reportVini' })); // NUOVO
       dom.header.goHomeBtn.addEventListener('click', () => updateState({ view: 'home' }));
       
       dom.home.goInventario.addEventListener('click', () => updateState({ view: 'inventario' }));
       dom.home.goListaSpesa.addEventListener('click', () => updateState({ view: 'listaSpesa' }));
       dom.home.goCosti.addEventListener('click', () => updateState({ view: 'costi' }));
       dom.home.goCantina.addEventListener('click', () => updateState({ view: 'cantina' })); // NUOVO
+      dom.home.goReportVini.addEventListener('click', () => updateState({ view: 'reportVini' })); // NUOVO
 
       // CSV Upload / Export
       dom.home.showCsvUpload.addEventListener('click', () => dom.home.csvFileInput.click());
@@ -774,7 +796,8 @@
 
       // NUOVO: Ricerca Vini
       dom.cantina.searchBar.addEventListener('input', (e) => {
-        updateState({ searchTermVini: e.target.value });
+        // Quando cerco, resetto le tendine per evitare confusione
+        updateState({ searchTermVini: e.target.value, expandedRegions: new Set() });
       });
 
       // Filtri Inventario
@@ -822,18 +845,12 @@
 
       // Lista Spesa
       dom.listaSpesa.copyBtn.addEventListener('click', copyShoppingListToClipboard);
-      
-      // Dark Mode (RIMOSSO)
 
       // Alert
       dom.customAlert.closeBtn.addEventListener('click', () => {
         dom.customAlert.element.classList.add('hidden');
       });
     }
-
-    // Funzione initDarkMode RIMOSSA
-    // Funzione setDarkMode RIMOSSA
-
 
     // --- FUNZIONI DI RENDER ---
 
@@ -861,6 +878,9 @@
       if (state.view === 'cantina') {
         renderWineList(); // NUOVO
       }
+      if (state.view === 'reportVini') {
+        renderWineCostReport(); // NUOVO
+      }
       
       // 4. Render Badge Lista Spesa
       const shoppingList = getShoppingList();
@@ -881,6 +901,7 @@
       dom.views.listaSpesa.classList.add('hidden');
       dom.views.costi.classList.add('hidden');
       dom.views.cantina.classList.add('hidden'); // NUOVO
+      dom.views.reportVini.classList.add('hidden'); // NUOVO
       
       dom.header.navTabs.classList.add('hidden');
       dom.header.goHomeBtn.classList.add('hidden');
@@ -900,7 +921,9 @@
         dom.header.navListaSpesa.classList.add('bg-white', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
         dom.header.navListaSpesa.classList.remove('bg-blue-600', 'text-white');
         dom.header.navCantina.classList.add('bg-white', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
-        dom.header.navCantina.classList.remove('bg-purple-600', 'text-white'); // Usa viola per cantina
+        dom.header.navCantina.classList.remove('bg-purple-600', 'text-white');
+        dom.header.navReportVini.classList.add('bg-white', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
+        dom.header.navReportVini.classList.remove('bg-indigo-600', 'text-white'); // NUOVO
         
         if (state.view === 'inventario') {
           dom.views.inventario.classList.remove('hidden');
@@ -921,6 +944,11 @@
           // Stato attivo tab
           dom.header.navCantina.classList.add('bg-purple-600', 'text-white');
           dom.header.navCantina.classList.remove('bg-white', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
+        } else if (state.view === 'reportVini') { // NUOVO
+          dom.views.reportVini.classList.remove('hidden');
+          // Stato attivo tab
+          dom.header.navReportVini.classList.add('bg-indigo-600', 'text-white');
+          dom.header.navReportVini.classList.remove('bg-white', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
         }
       }
     }
@@ -1449,16 +1477,19 @@
 
     /**
      * NUOVO: Disegna la lista dei vini nella cantina.
+     * MODIFICATO: per raggruppamento a tendina per REGIONE
      */
     function renderWineList() {
       const container = dom.cantina.listContainer;
+      container.innerHTML = ''; // Pulisci container
+
       // 1. Filtra i vini in base alla ricerca (nome, anno, cantina, regione)
       const searchTerm = state.searchTermVini.toLowerCase();
       const filteredWines = state.vini.filter(v => 
         v.nome.toLowerCase().includes(searchTerm) ||
         String(v.anno).includes(searchTerm) ||
-        (v.cantina && v.cantina.toLowerCase().includes(searchTerm)) || // AGGIUNTO
-        (v.regione && v.regione.toLowerCase().includes(searchTerm))    // AGGIUNTO
+        (v.cantina && v.cantina.toLowerCase().includes(searchTerm)) ||
+        (v.regione && v.regione.toLowerCase().includes(searchTerm))
       );
       
       // 2. Gestisci messaggi "nessun vino"
@@ -1475,19 +1506,224 @@
         return;
       }
 
-      // 3. Disegna le carte dei vini
-      filteredWines.forEach(wine => {
-        const card = createWineCard(wine);
-        container.appendChild(card);
+      // 3. Raggruppa i vini filtrati per REGIONE
+      const groupedByRegion = filteredWines.reduce((acc, wine) => {
+        const region = wine.regione || 'Senza Regione';
+        if (!acc[region]) {
+          acc[region] = [];
+        }
+        acc[region].push(wine);
+        return acc;
+      }, {});
+
+      // 4. Ordina i vini all'interno di ogni regione per CANTINA
+      for (const region in groupedByRegion) {
+        groupedByRegion[region].sort((a, b) => {
+          const cantinaA = a.cantina || '';
+          const cantinaB = b.cantina || '';
+          return cantinaA.localeCompare(cantinaB);
+        });
+      }
+
+      // 5. Ordina le regioni alfabeticamente
+      const sortedRegions = Object.keys(groupedByRegion).sort();
+
+      // 6. Disegna le tendine
+      sortedRegions.forEach(region => {
+        const winesInRegion = groupedByRegion[region];
+        const isExpanded = state.expandedRegions.has(region);
+
+        const accordionWrapper = document.createElement('div');
+        accordionWrapper.className = "bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden";
+        
+        // Pulsante Header Tendina
+        const headerButton = document.createElement('button');
+        headerButton.className = "w-full flex justify-between items-center p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700";
+        headerButton.innerHTML = `
+          <div class="flex items-center">
+            <span class="text-xl font-semibold text-purple-700 dark:text-purple-300">${region}</span>
+            <span class="ml-3 px-2 py-0.5 bg-gray-200 text-gray-700 dark:bg-gray-600 dark:text-gray-200 text-sm font-medium rounded-full">${winesInRegion.length} vini</span>
+          </div>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500 dark:text-gray-400 transition-transform duration-200 ${isExpanded ? 'transform rotate-180' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        `;
+        
+        // Contenuto Tendina (griglia di card)
+        const contentDiv = document.createElement('div');
+        contentDiv.className = `region-content p-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ${isExpanded ? '' : 'hidden'}`;
+
+        winesInRegion.forEach(wine => {
+          const card = createWineCard(wine); // La funzione createWineCard rimane invariata
+          contentDiv.appendChild(card);
+        });
+
+        // Aggiungi listener al pulsante
+        headerButton.addEventListener('click', () => {
+          if (state.expandedRegions.has(region)) {
+            state.expandedRegions.delete(region);
+          } else {
+            state.expandedRegions.add(region);
+          }
+          renderWineList(); // Ridisegna la lista per aggiornare lo stato (aperto/chiuso)
+        });
+
+        accordionWrapper.appendChild(headerButton);
+        accordionWrapper.appendChild(contentDiv);
+        container.appendChild(accordionWrapper);
       });
     }
 
     /**
+     * NUOVO: Disegna il report dei costi per i VINI.
+     */
+    function renderWineCostReport() {
+      const container = dom.reportVini.container;
+
+      // 1. Raggruppa vini per REGIONE
+      const groupedByRegion = state.vini.reduce((acc, v) => {
+        const region = v.regione || 'Senza Regione';
+        if (!acc[region]) {
+          acc[region] = [];
+        }
+        acc[region].push(v);
+        return acc;
+      }, {});
+      
+      if (state.vini.length === 0) {
+        container.innerHTML = `<p class="text-center text-gray-500 dark:text-gray-400 py-10 text-lg">
+          Nessun vino nella cantina per calcolare i costi.
+        </p>`;
+        return;
+      }
+
+      container.innerHTML = ''; // Pulisci
+      let granTotaleValore = 0;
+      let granTotaleVendita = 0;
+      let granTotaleMargine = 0;
+      let granTotaleBottiglie = 0;
+
+      // 2. Itera sulle regioni e crea le tabelle
+      Object.keys(groupedByRegion).sort().forEach(region => {
+        const wines = groupedByRegion[region];
+        let totaleRegioneValore = 0;
+        let totaleRegioneVendita = 0;
+        let totaleRegioneMargine = 0;
+        let totaleRegioneBottiglie = 0;
+        
+        const groupDiv = document.createElement('div');
+        groupDiv.className = "mb-8";
+        
+        const title = document.createElement('h3');
+        title.className = "text-xl font-semibold text-gray-700 border-b border-gray-300 pb-2 mb-3 dark:text-gray-200 dark:border-gray-700";
+        title.textContent = region;
+        groupDiv.appendChild(title);
+
+        const table = document.createElement('table');
+        table.className = "w-full min-w-full divide-y divide-gray-200 dark:divide-gray-700";
+        table.innerHTML = `
+          <thead class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Vino (Cantina)</th>
+              <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Q.tà</th>
+              <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Valore (Costo)</th>
+              <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Valore (Vendita)</th>
+              <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Margine Tot.</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+          </tbody>
+          <tfoot class="bg-gray-50 dark:bg-gray-700">
+            <tr>
+              <td class="px-4 py-2 text-right text-sm font-bold text-gray-700 dark:text-gray-100">Totale Regione</td>
+              <td id="totale-qta" class="px-4 py-2 text-right text-sm font-bold text-gray-900 dark:text-white"></td>
+              <td id="totale-valore" class="px-4 py-2 text-right text-sm font-bold text-gray-900 dark:text-white"></td>
+              <td id="totale-vendita" class="px-4 py-2 text-right text-sm font-bold text-gray-900 dark:text-white"></td>
+              <td id="totale-margine" class="px-4 py-2 text-right text-sm font-bold text-gray-900 dark:text-white"></td>
+            </tr>
+          </tfoot>
+        `;
+        
+        const tbody = table.querySelector('tbody');
+        
+        wines.forEach(v => {
+          const costo = parseFloat(v.costo) || 0;
+          const vendita = parseFloat(v.vendita) || 0;
+          const quantita = parseInt(v.quantita) || 0;
+          
+          const valoreCosto = costo * quantita;
+          const valoreVendita = vendita * quantita;
+          const valoreMargine = valoreVendita - valoreCosto;
+
+          totaleRegioneValore += valoreCosto;
+          totaleRegioneVendita += valoreVendita;
+          totaleRegioneMargine += valoreMargine;
+          totaleRegioneBottiglie += quantita;
+          
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="px-4 py-2 text-sm font-medium text-gray-900 dark:text-gray-100">
+              ${v.nome} ${v.anno}
+              <span class="text-xs text-gray-500 block dark:text-gray-400">${v.cantina || 'Sconosciuta'}</span>
+            </td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200 text-right">${quantita} btg.</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-right">${formatCurrency(valoreCosto)}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200 text-right">${formatCurrency(valoreVendita)}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm font-medium ${valoreMargine > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'} text-right">
+              ${formatCurrency(valoreMargine)}
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+        
+        table.querySelector('#totale-qta').textContent = `${totaleRegioneBottiglie} btg.`;
+        table.querySelector('#totale-valore').textContent = formatCurrency(totaleRegioneValore);
+        table.querySelector('#totale-vendita').textContent = formatCurrency(totaleRegioneVendita);
+        table.querySelector('#totale-margine').textContent = formatCurrency(totaleRegioneMargine);
+        groupDiv.appendChild(table);
+        container.appendChild(groupDiv);
+        
+        granTotaleValore += totaleRegioneValore;
+        granTotaleVendita += totaleRegioneVendita;
+        granTotaleMargine += totaleRegioneMargine;
+        granTotaleBottiglie += totaleRegioneBottiglie;
+      });
+      
+      // 3. Aggiungi Gran Totale
+      const granTotaleDiv = document.createElement('div');
+      granTotaleDiv.className = "mt-8 pt-4 border-t-2 border-indigo-600 space-y-2";
+      
+      granTotaleDiv.innerHTML = `
+        <div class="flex justify-between items-center">
+          <span class="text-xl font-bold text-gray-800 dark:text-gray-100">Totale Bottiglie:</span>
+          <span class="text-xl font-bold text-indigo-700 dark:text-indigo-400">${granTotaleBottiglie} btg.</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-xl font-bold text-gray-800 dark:text-gray-100">Valore Totale (Costo):</span>
+          <span class="text-xl font-bold text-indigo-700 dark:text-indigo-400">${formatCurrency(granTotaleValore)}</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-xl font-bold text-gray-800 dark:text-gray-100">Valore Totale (Vendita):</span>
+          <span class="text-xl font-bold text-indigo-700 dark:text-indigo-400">${formatCurrency(granTotaleVendita)}</span>
+        </div>
+        <div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-300 dark:border-gray-600">
+          <span class="text-2xl font-bold text-gray-800 dark:text-gray-100">Margine Totale Cantina:</span>
+          <span class="text-2xl font-bold ${granTotaleMargine > 0 ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}">
+            ${formatCurrency(granTotaleMargine)}
+          </span>
+        </div>
+      `;
+      container.appendChild(granTotaleDiv);
+    }
+
+
+    /**
      * NUOVO: Crea il singolo elemento card per un vino.
+     * (Questa funzione è rimasta uguale, viene solo chiamata da un'altra parte)
      */
     function createWineCard(wine) {
       const div = document.createElement('div');
-      div.className = "wine-card bg-white rounded-lg shadow-lg overflow-hidden dark:bg-gray-800 flex flex-col";
+      div.className = "wine-card bg-white rounded-lg shadow-lg overflow-hidden dark:bg-gray-800 flex flex-col relative"; // Aggiunto relative
       
       const costo = parseFloat(wine.costo) || 0;
       const vendita = parseFloat(wine.vendita) || 0;
@@ -2267,10 +2503,3 @@
 
 </body>
 </html>
-
-
-
-
-
-
-
