@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kitchen OS - Food Cost & Inventario</title>
+  <title>Kitchen OS - Gestione Completa</title>
 
   <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96">
   <link rel="shortcut icon" href="favicon.ico">
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.js"></script>
-  
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -18,8 +17,8 @@
       theme: {
         extend: {
           colors: {
-            slate: { 850: '#151f2e', 900: '#0f172a' }, // Sfondo scuro professionale
-            amber: { 500: '#f59e0b', 600: '#d97706' }, // Colore accento (Gold)
+            slate: { 850: '#151f2e', 900: '#0f172a' },
+            amber: { 500: '#f59e0b', 600: '#d97706' },
           }
         }
       }
@@ -27,19 +26,16 @@
   </script>
 
   <style>
-    /* Rimozione frecce input number */
     input[type='number']::-webkit-inner-spin-button,
     input[type='number']::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     input[type='number'] { -moz-appearance: textfield; }
-    
-    /* Scrollbar personalizzata */
     ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: #1e293b; }
     ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #64748b; }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-200 min-h-screen font-sans selection:bg-amber-500 selection:text-white">
+<body class="bg-slate-900 text-slate-200 min-h-screen font-sans">
 
   <div id="loading-overlay" class="fixed inset-0 bg-slate-900/90 flex flex-col items-center justify-center z-[999] backdrop-blur-sm">
     <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-amber-500 border-solid mb-4"></div>
@@ -48,221 +44,185 @@
 
   <div id="custom-alert" class="fixed top-5 right-5 z-[1000] p-4 rounded-lg shadow-2xl max-w-sm hidden border-l-4 transform transition-all duration-300">
     <div class="flex items-start">
-      <div id="custom-alert-icon" class="flex-shrink-0 mr-3"></div>
       <div class="flex-1">
         <p id="custom-alert-title" class="font-bold text-sm uppercase tracking-wider"></p>
         <p id="custom-alert-message" class="mt-1 text-sm text-slate-300"></p>
       </div>
-      <button id="custom-alert-close-btn" class="ml-4 text-slate-400 hover:text-white">✕</button>
     </div>
   </div>
 
-  <div class="max-w-7xl mx-auto p-4 md:p-6 pb-24">
+  <div class="max-w-7xl mx-auto p-4 md:p-6 pb-32">
     
-    <header class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-slate-700 pb-4">
-      <div class="flex items-center gap-3 mb-4 md:mb-0">
+    <header class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-slate-700 pb-4 gap-4">
+      <div class="flex items-center gap-3">
         <div class="bg-amber-500 text-slate-900 p-2 rounded-lg font-bold text-xl">OS</div>
-        <h1 class="text-2xl md:text-3xl font-bold text-slate-100 tracking-tight">Kitchen Management</h1>
+        <h1 class="text-2xl md:text-3xl font-bold text-slate-100 tracking-tight">Kitchen Manager</h1>
       </div>
       
-      <nav class="flex bg-slate-800 p-1 rounded-xl shadow-lg">
-        <button id="nav-inventario" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 bg-amber-500 text-slate-900 shadow">
-          Inventario Check
-        </button>
-        <button id="nav-foodcost" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-700">
-          Calcolo Food Cost
-        </button>
-        <button id="nav-cantina" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-700">
-          Cantina Vini
-        </button>
+      <nav class="flex bg-slate-800 p-1 rounded-xl shadow-lg w-full md:w-auto overflow-x-auto">
+        <button id="nav-inventario" class="flex-1 md:flex-none nav-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 bg-amber-500 text-slate-900 shadow">Inventario</button>
+        <button id="nav-foodcost" class="flex-1 md:flex-none nav-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-700">Food Cost & Menu</button>
+        <button id="nav-cantina" class="flex-1 md:flex-none nav-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-700">Cantina Vini</button>
       </nav>
     </header>
 
     <main>
       
       <div id="view-inventario">
-        
         <div class="flex flex-col md:flex-row gap-4 mb-6">
           <div class="relative flex-1">
-            <input type="text" id="search-bar" placeholder="Cerca ingrediente..." 
-              class="w-full bg-slate-800 border border-slate-700 text-white px-4 py-3 pl-10 rounded-xl focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors shadow-inner">
+            <input type="text" id="search-bar" placeholder="Cerca prodotto..." class="w-full bg-slate-800 border border-slate-700 text-white px-4 py-3 pl-10 rounded-xl focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500">
             <svg class="w-5 h-5 text-slate-500 absolute top-3.5 left-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
           </div>
-          
-          <div class="flex gap-2">
-            <div class="bg-slate-800 border border-slate-700 px-4 py-2 rounded-xl flex flex-col justify-center min-w-[120px]">
-              <span class="text-xs text-slate-400 uppercase font-bold">Valore Magazzino</span>
-              <span id="inventory-total-value" class="text-lg font-bold text-emerald-400">€ 0,00</span>
-            </div>
+          <div class="bg-slate-800 border border-slate-700 px-4 py-2 rounded-xl flex flex-col justify-center min-w-[120px]">
+            <span class="text-xs text-slate-400 uppercase font-bold">Valore Totale</span>
+            <span id="inventory-total-value" class="text-lg font-bold text-emerald-400">€ 0,00</span>
           </div>
         </div>
-
-        <div id="inventory-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          </div>
-         <p id="no-products-message" class="text-center text-slate-500 py-10 hidden">Nessun prodotto. Usa il tasto + per aggiungere.</p>
+        <div id="inventory-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        <p id="no-products-message" class="text-center text-slate-500 py-10 hidden">Nessun prodotto.</p>
       </div>
-
 
       <div id="view-foodcost" class="hidden">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           <div class="lg:col-span-2 space-y-6">
             <div class="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700">
-              <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-                Componi Piatto (Ricetta)
-              </h2>
+              <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                  <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                  Nuovo Calcolo Piatto
+                </h2>
+                <button id="fc-reset-btn" class="text-xs text-slate-400 hover:text-white underline">Resetta</button>
+              </div>
               
-              <div class="flex flex-col sm:flex-row gap-3 mb-6 p-4 bg-slate-700/50 rounded-xl">
-                <select id="fc-select-product" class="flex-1 bg-slate-900 border border-slate-600 text-white rounded-lg p-2.5 focus:border-amber-500 focus:outline-none">
-                  <option value="">Seleziona ingrediente dall'inventario...</option>
-                  </select>
-                <input type="number" id="fc-input-qty" placeholder="Q.tà usata" class="w-full sm:w-32 bg-slate-900 border border-slate-600 text-white rounded-lg p-2.5 focus:border-amber-500 focus:outline-none">
-                <button id="fc-add-btn" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-6 rounded-lg transition-colors">
-                  Aggiungi
-                </button>
+              <div class="flex flex-col sm:flex-row gap-3 mb-6 p-4 bg-slate-700/30 rounded-xl">
+                <select id="fc-select-product" class="flex-1 bg-slate-900 border border-slate-600 text-white rounded-lg p-2.5 focus:border-amber-500 focus:outline-none"></select>
+                <input type="number" id="fc-input-qty" placeholder="Q.tà" class="w-24 bg-slate-900 border border-slate-600 text-white rounded-lg p-2.5 focus:border-amber-500 focus:outline-none">
+                <button id="fc-add-btn" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-6 rounded-lg">Add</button>
               </div>
 
-              <div class="overflow-x-auto rounded-lg border border-slate-700">
-                <table class="w-full text-left text-slate-300">
+              <div class="overflow-x-auto rounded-lg border border-slate-700 mb-4">
+                <table class="w-full text-left text-slate-300 text-sm">
                   <thead class="bg-slate-900 text-slate-400 text-xs uppercase">
-                    <tr>
-                      <th class="px-4 py-3">Ingrediente</th>
-                      <th class="px-4 py-3 text-right">Q.tà</th>
-                      <th class="px-4 py-3 text-right">Costo</th>
-                      <th class="px-4 py-3 text-center">Azioni</th>
-                    </tr>
+                    <tr><th class="px-4 py-3">Ingrediente</th><th class="px-4 py-3 text-right">Q.tà</th><th class="px-4 py-3 text-right">Costo</th><th class="px-4 py-3 text-center"></th></tr>
                   </thead>
-                  <tbody id="fc-recipe-body" class="divide-y divide-slate-700 bg-slate-800">
-                    </tbody>
+                  <tbody id="fc-recipe-body" class="divide-y divide-slate-700 bg-slate-800"></tbody>
                 </table>
               </div>
-              <p id="fc-empty-msg" class="text-center text-slate-500 py-4 italic">Aggiungi ingredienti per calcolare il costo.</p>
+            </div>
+
+            <div class="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700">
+               <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                  <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                  Il Tuo Menu (Piatti Salvati)
+               </h2>
+               <div id="saved-recipes-list" class="space-y-3">
+                  </div>
+               <p id="no-recipes-msg" class="text-center text-slate-500 italic">Nessun piatto salvato.</p>
             </div>
           </div>
 
           <div class="space-y-6">
             <div class="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700 sticky top-6">
-              <h3 class="text-lg font-bold text-slate-100 mb-4 border-b border-slate-700 pb-2">Analisi Costi</h3>
+              <h3 class="text-lg font-bold text-slate-100 mb-4 border-b border-slate-700 pb-2">Analisi & Salvataggio</h3>
               
               <div class="space-y-4">
-                <div class="flex justify-between items-center">
+                <input type="text" id="fc-dish-name" placeholder="Nome Piatto (es. Carbonara)" class="w-full bg-slate-900 border border-slate-600 text-white px-4 py-2 rounded-lg font-bold focus:border-emerald-500 focus:outline-none">
+                
+                <div class="flex justify-between items-center text-sm">
                   <span class="text-slate-400">Costo Materie Prime:</span>
-                  <span id="fc-total-cost" class="text-2xl font-bold text-emerald-400">€ 0,00</span>
+                  <span id="fc-total-cost" class="text-xl font-bold text-emerald-400">€ 0,00</span>
                 </div>
                 
-                <div class="pt-4 border-t border-slate-700">
-                  <label class="block text-sm font-medium text-slate-300 mb-1">Prezzo di Vendita (Proposto)</label>
-                  <div class="relative">
-                    <span class="absolute left-3 top-2.5 text-slate-500">€</span>
-                    <input type="number" id="fc-sell-price" class="w-full bg-slate-900 border border-slate-600 text-white pl-8 pr-4 py-2 rounded-lg focus:border-amber-500 focus:outline-none font-bold text-lg" placeholder="0.00">
-                  </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1">Prezzo Vendita (€)</label>
+                  <input type="number" id="fc-sell-price" class="w-full bg-slate-900 border border-slate-600 text-white px-4 py-2 rounded-lg font-bold text-lg focus:border-amber-500 focus:outline-none">
                 </div>
 
-                <div class="bg-slate-700/50 p-4 rounded-xl mt-4">
+                <div class="bg-slate-700/50 p-3 rounded-lg">
                   <div class="flex justify-between items-center mb-1">
-                    <span class="text-sm font-bold text-slate-200">FOOD COST %</span>
-                    <span id="fc-percent" class="text-xl font-black text-slate-100">0%</span>
+                    <span class="text-xs font-bold text-slate-300">FOOD COST %</span>
+                    <span id="fc-percent" class="text-lg font-black text-slate-100">0%</span>
                   </div>
-                  <div class="w-full bg-slate-600 rounded-full h-2.5">
-                    <div id="fc-percent-bar" class="bg-emerald-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                  <div class="w-full bg-slate-600 rounded-full h-2">
+                    <div id="fc-percent-bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
                   </div>
-                  <p id="fc-status-text" class="text-xs text-right mt-1 text-slate-400">Inserisci prezzo vendita</p>
-                </div>
-                
-                <div class="pt-4 border-t border-slate-700 flex justify-between items-center">
-                   <span class="text-slate-400">Margine Lordo:</span>
-                   <span id="fc-margin" class="font-bold text-white">€ 0,00</span>
+                  <div class="flex justify-between items-center mt-2 border-t border-slate-600 pt-2">
+                     <span class="text-xs text-slate-400">Margine:</span>
+                     <span id="fc-margin" class="font-bold text-white text-sm">€ 0,00</span>
+                  </div>
                 </div>
 
-                <button id="fc-reset-btn" class="w-full mt-4 border border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white py-2 rounded-lg text-sm transition-colors">
-                  Resetta Calcolo
+                <button id="fc-save-btn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg transition-transform active:scale-95 flex justify-center items-center gap-2">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                  Salva Piatto nel Menu
                 </button>
               </div>
             </div>
           </div>
-
         </div>
       </div>
-
 
       <div id="view-cantina" class="hidden">
         <div class="flex flex-col md:flex-row gap-4 mb-6">
            <div class="relative flex-1">
-            <input type="text" id="search-bar-vini" placeholder="Cerca vino, cantina, anno..." 
-              class="w-full bg-slate-800 border border-slate-700 text-white px-4 py-3 pl-10 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 shadow-inner">
+            <input type="text" id="search-bar-vini" placeholder="Cerca vino, cantina..." class="w-full bg-slate-800 border border-slate-700 text-white px-4 py-3 pl-10 rounded-xl focus:border-purple-500 focus:outline-none">
             <svg class="w-5 h-5 text-slate-500 absolute top-3.5 left-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
           </div>
-          <button id="btn-report-vini-pdf" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-bold shadow transition-colors flex items-center gap-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          <button id="btn-report-vini-pdf" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-bold shadow flex items-center gap-2">
             PDF Report
           </button>
         </div>
-
-        <div id="wine-list-container" class="space-y-4">
-          </div>
+        <div id="wine-list-container" class="space-y-4"></div>
         <p id="no-wines-message" class="text-center text-slate-500 py-10 hidden">Cantina vuota.</p>
       </div>
 
     </main>
-  </div>
 
-  <button id="fab-add-btn" class="fixed bottom-8 right-8 bg-amber-500 hover:bg-amber-600 text-slate-900 p-4 rounded-full shadow-2xl transition-transform hover:scale-110 z-30">
-    <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-    </svg>
-  </button>
+    <button id="fab-add-btn" class="fixed bottom-8 right-8 bg-amber-500 hover:bg-amber-600 text-slate-900 p-4 rounded-full shadow-2xl transition-transform hover:scale-110 z-30">
+      <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+    </button>
+  </div>
 
   <div id="modal-product" class="fixed inset-0 bg-slate-900/95 flex items-center justify-center p-4 z-40 hidden backdrop-blur-sm">
     <div class="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg border border-slate-700">
       <div class="p-6 border-b border-slate-700 flex justify-between items-center">
-        <h2 class="text-xl font-bold text-white">Nuovo Articolo</h2>
+        <h2 id="modal-prod-title" class="text-xl font-bold text-white">Gestione Articolo</h2>
         <button id="close-modal-product" class="text-slate-400 hover:text-white">✕</button>
       </div>
       <form id="form-product" class="p-6 space-y-4">
-        
-        <div>
-          <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nome Prodotto</label>
-          <input type="text" id="inp-nome" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white focus:border-amber-500 focus:outline-none" required placeholder="Es. Pomodori Pelati">
+        <input type="hidden" id="edit-prod-id"> <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nome</label>
+          <input type="text" id="inp-nome" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white focus:border-amber-500 focus:outline-none" required>
         </div>
-
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Fornitore</label>
-            <input type="text" id="inp-fornitore" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white focus:border-amber-500 focus:outline-none" placeholder="Es. Metro">
+            <input type="text" id="inp-fornitore" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white focus:border-amber-500 focus:outline-none">
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Unità di Misura</label>
-            <select id="inp-unita" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white focus:border-amber-500 focus:outline-none">
-              <option value="kg">kg</option>
-              <option value="lt">lt</option>
-              <option value="pz">pz</option>
-              <option value="ct">cartone</option>
-              <option value="gr">gr</option>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Unità</label>
+            <select id="inp-unita" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white">
+              <option value="kg">kg</option><option value="lt">lt</option><option value="pz">pz</option><option value="ct">ct</option><option value="gr">gr</option>
             </select>
           </div>
         </div>
-
         <div class="grid grid-cols-2 gap-4 bg-slate-700/30 p-3 rounded-xl border border-slate-700">
           <div>
             <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Costo Unitario (€)</label>
-            <input type="number" id="inp-costo" step="0.01" min="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white focus:border-emerald-500 focus:outline-none" placeholder="0.00">
+            <input type="number" id="inp-costo" step="0.01" min="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white focus:border-emerald-500 focus:outline-none">
           </div>
           <div>
             <label class="block text-xs font-bold text-amber-500 uppercase mb-1">Porzioni per Unità</label>
-            <input type="number" id="inp-resa" step="1" min="1" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white focus:border-amber-500 focus:outline-none" placeholder="Es. 10" value="1">
-            <p class="text-[10px] text-slate-400 mt-1">Es: 1kg fa 10 porzioni?</p>
+            <input type="number" id="inp-resa" step="1" min="1" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white focus:border-amber-500 focus:outline-none" placeholder="1">
           </div>
         </div>
-
         <div>
-            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Giacenza Iniziale</label>
-            <input type="number" id="inp-quantita" step="any" min="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white focus:border-amber-500 focus:outline-none" value="0">
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Giacenza Attuale</label>
+            <input type="number" id="inp-quantita" step="any" min="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white focus:border-amber-500 focus:outline-none">
         </div>
-
-        <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-xl shadow-lg transition-transform active:scale-95 mt-4">
-          Aggiungi all'Inventario
-        </button>
+        <button type="submit" id="btn-save-prod" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-xl mt-4">Salva</button>
       </form>
     </div>
   </div>
@@ -292,13 +252,11 @@
     </div>
   </div>
 
-
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
-    import { getFirestore, doc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+    import { getFirestore, doc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
     import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
 
-    // Configurazione Firebase (Invariata)
     const firebaseConfig = {
       apiKey: "AIzaSyDWS8urdhG9RdS62rihj0FBPV38aWUclGQ",
       authDomain: "inventario-a52a4.firebaseapp.com",
@@ -312,43 +270,30 @@
     const GRUPPO_ID = "inventario-segreto-123";
     let db, auth;
     
-    // Stato Applicazione
     const state = {
-        view: 'inventario', // inventario, foodcost, cantina
+        view: 'inventario',
         products: [],
         vini: [],
-        recipeIngredients: [] // { id, name, qtyUsed, unit, costPerUnit }
+        recipes: [], // Piatti salvati
+        recipeIngredients: [] // Ingredienti temporanei calcolo
     };
 
-    // Elementi DOM
+    // --- ELEMENTS ---
     const els = {
         navInv: document.getElementById('nav-inventario'),
         navFood: document.getElementById('nav-foodcost'),
         navVin: document.getElementById('nav-cantina'),
-        views: {
-            inv: document.getElementById('view-inventario'),
-            food: document.getElementById('view-foodcost'),
-            vin: document.getElementById('view-cantina')
-        },
+        views: { inv: document.getElementById('view-inventario'), food: document.getElementById('view-foodcost'), vin: document.getElementById('view-cantina') },
+        
+        // Inventario
         invList: document.getElementById('inventory-list-container'),
         invTotal: document.getElementById('inventory-total-value'),
         searchInv: document.getElementById('search-bar'),
-        fab: document.getElementById('fab-add-btn'),
-        modalProd: {
-            el: document.getElementById('modal-product'),
-            form: document.getElementById('form-product'),
-            close: document.getElementById('close-modal-product')
-        },
-        modalWine: {
-            el: document.getElementById('modal-wine'),
-            form: document.getElementById('form-wine'),
-            close: document.getElementById('close-modal-wine')
-        },
-        wineList: document.getElementById('wine-list-container'),
-        searchWine: document.getElementById('search-bar-vini'),
-        pdfBtn: document.getElementById('btn-report-vini-pdf'),
         
-        // Food Cost Elements
+        // Modal Product
+        modalProd: { el: document.getElementById('modal-product'), form: document.getElementById('form-product'), close: document.getElementById('close-modal-product'), title: document.getElementById('modal-prod-title'), id: document.getElementById('edit-prod-id') },
+        
+        // Food Cost
         fcSelect: document.getElementById('fc-select-product'),
         fcInputQty: document.getElementById('fc-input-qty'),
         fcAddBtn: document.getElementById('fc-add-btn'),
@@ -357,270 +302,157 @@
         fcSellPrice: document.getElementById('fc-sell-price'),
         fcPercent: document.getElementById('fc-percent'),
         fcPercentBar: document.getElementById('fc-percent-bar'),
-        fcStatus: document.getElementById('fc-status-text'),
         fcMargin: document.getElementById('fc-margin'),
-        fcReset: document.getElementById('fc-reset-btn'),
-        fcEmpty: document.getElementById('fc-empty-msg')
+        fcDishName: document.getElementById('fc-dish-name'),
+        fcSaveBtn: document.getElementById('fc-save-btn'),
+        fcResetBtn: document.getElementById('fc-reset-btn'),
+        savedRecipesList: document.getElementById('saved-recipes-list'),
+        
+        // Vini
+        modalWine: { el: document.getElementById('modal-wine'), form: document.getElementById('form-wine'), close: document.getElementById('close-modal-wine') },
+        wineList: document.getElementById('wine-list-container'),
+        searchWine: document.getElementById('search-bar-vini'),
+        pdfBtn: document.getElementById('btn-report-vini-pdf'),
+        
+        fab: document.getElementById('fab-add-btn')
     };
 
-    // --- INIZIALIZZAZIONE ---
     async function init() {
-        try {
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    startListeners();
-                } else {
-                    signInAnonymously(auth).catch(e => alert("Login Error: " + e.message));
-                }
-            });
-
-            setupEvents();
-        } catch (e) {
-            console.error(e);
-            alert("Errore Init: " + e.message);
-        }
+        const app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+        onAuthStateChanged(auth, user => {
+            if (user) startListeners();
+            else signInAnonymously(auth);
+        });
+        setupEvents();
     }
 
     function startListeners() {
-        // Prodotti
-        onSnapshot(collection(db, "inventari", GRUPPO_ID, "prodotti"), (snap) => {
+        onSnapshot(collection(db, "inventari", GRUPPO_ID, "prodotti"), snap => {
             state.products = snap.docs.map(d => ({id: d.id, ...d.data()}));
             document.getElementById('loading-overlay').classList.add('hidden');
-            render();
+            if(state.view === 'inventario') renderInventory();
+            if(state.view === 'foodcost') renderFoodCostView();
         });
-        // Vini
-        onSnapshot(collection(db, "inventari", GRUPPO_ID, "vini"), (snap) => {
+        onSnapshot(collection(db, "inventari", GRUPPO_ID, "vini"), snap => {
             state.vini = snap.docs.map(d => ({id: d.id, ...d.data()}));
-            render();
+            if(state.view === 'cantina') renderWines();
+        });
+        // NUOVO LISTENER: Piatti Salvati
+        onSnapshot(collection(db, "inventari", GRUPPO_ID, "piatti"), snap => {
+            state.recipes = snap.docs.map(d => ({id: d.id, ...d.data()}));
+            if(state.view === 'foodcost') renderSavedRecipes();
         });
     }
 
-    // --- RENDERING ---
-    function render() {
-        if (state.view === 'inventario') renderInventory();
-        else if (state.view === 'foodcost') renderFoodCostView(); // Popola la select
-        else if (state.view === 'cantina') renderWines();
-        
-        updateNav();
-    }
-
-    function updateNav() {
-        const activeClass = "bg-amber-500 text-slate-900 shadow";
-        const inactiveClass = "text-slate-400 hover:text-white hover:bg-slate-700";
-        
-        const setClass = (el, active) => {
-            el.className = `nav-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${active ? activeClass : inactiveClass}`;
-        };
-
-        setClass(els.navInv, state.view === 'inventario');
-        setClass(els.navFood, state.view === 'foodcost');
-        setClass(els.navVin, state.view === 'cantina');
-
-        els.views.inv.classList.toggle('hidden', state.view !== 'inventario');
-        els.views.food.classList.toggle('hidden', state.view !== 'foodcost');
-        els.views.vin.classList.toggle('hidden', state.view !== 'cantina');
-
-        // Colore FAB in base alla vista
-        if(state.view === 'cantina') {
-             els.fab.classList.remove('bg-amber-500', 'hover:bg-amber-600');
-             els.fab.classList.add('bg-purple-600', 'hover:bg-purple-700', 'text-white');
-             els.fab.style.display = 'block';
-        } else if (state.view === 'inventario') {
-             els.fab.classList.add('bg-amber-500', 'hover:bg-amber-600');
-             els.fab.classList.remove('bg-purple-600', 'hover:bg-purple-700', 'text-white');
-             els.fab.style.display = 'block';
-        } else {
-             els.fab.style.display = 'none'; // Nascondi su Food Cost
-        }
-    }
-
-    // --- LOGICA INVENTARIO ---
+    // --- RENDER FUNCTIONS ---
     function renderInventory() {
         els.invList.innerHTML = '';
         const term = els.searchInv.value.toLowerCase();
-        
         let totalVal = 0;
         
-        // Ordina alfabetico
         const filtered = state.products
             .filter(p => p.nome.toLowerCase().includes(term))
             .sort((a,b) => a.nome.localeCompare(b.nome));
 
-        if(filtered.length === 0) {
-            document.getElementById('no-products-message').classList.remove('hidden');
-            return;
-        }
-        document.getElementById('no-products-message').classList.add('hidden');
+        if(filtered.length === 0) document.getElementById('no-products-message').classList.remove('hidden');
+        else document.getElementById('no-products-message').classList.add('hidden');
 
         filtered.forEach(p => {
             const costoUnitario = parseFloat(p.costo) || 0;
             const qta = parseFloat(p.quantita) || 0;
-            const resa = parseFloat(p.resa) || 1; // Porzioni per unità
-            const costoPorzione = resa > 0 ? (costoUnitario / resa) : 0;
-            
+            const resa = parseFloat(p.resa) || 1;
             totalVal += (costoUnitario * qta);
 
             const card = document.createElement('div');
-            card.className = "bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg flex flex-col justify-between group hover:border-slate-600 transition-colors";
+            card.className = "bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg flex flex-col justify-between group hover:border-slate-600 transition-colors relative";
             
             card.innerHTML = `
-                <div class="flex justify-between items-start mb-3">
+                <div class="flex justify-between items-start mb-2">
                     <div>
                         <h3 class="font-bold text-lg text-white leading-tight">${p.nome}</h3>
-                        <p class="text-xs text-slate-400 uppercase tracking-wide">${p.fornitore} • ${formatMoney(costoUnitario)}/${p.unita}</p>
+                        <p class="text-xs text-slate-400 uppercase tracking-wide mt-1">${p.fornitore} • ${formatMoney(costoUnitario)}/${p.unita}</p>
                     </div>
-                    <button class="text-slate-500 hover:text-red-400 p-1" onclick="deleteItem('${p.id}', 'prodotti')">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    </button>
+                    <div class="flex gap-2">
+                        <button class="text-slate-500 hover:text-amber-500 p-1 transition-colors" onclick="openEditProduct('${p.id}')">
+                           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                        </button>
+                    </div>
                 </div>
-
-                <div class="bg-slate-900/50 rounded-lg p-2 mb-3 flex items-center justify-between">
-                    <span class="text-xs text-amber-500 font-semibold uppercase">Costo Porzione</span>
-                    <span class="font-mono font-bold text-slate-200">${formatMoney(costoPorzione)}</span>
+                
+                <div class="flex items-center gap-2 mb-3 text-xs text-slate-500">
+                    <span class="bg-slate-900 px-2 py-1 rounded">Resa: ${resa}</span>
+                    <span class="bg-slate-900 px-2 py-1 rounded">Porzione: ${formatMoney(costoUnitario/resa)}</span>
                 </div>
 
                 <div class="flex items-center justify-between mt-auto pt-2 border-t border-slate-700/50">
-                    <span class="text-xs text-slate-400 font-bold uppercase">Giacenza</span>
-                    <div class="flex items-center gap-3">
-                        <button class="bg-slate-700 hover:bg-slate-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold" onclick="updateQty('${p.id}', ${qta - 1})">-</button>
+                    <div class="flex items-center gap-3 w-full justify-end">
+                         <button class="text-slate-500 hover:text-red-400 mr-auto p-1" onclick="deleteItem('${p.id}', 'prodotti')">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                        <button class="bg-slate-700 hover:bg-slate-600 text-white w-8 h-8 rounded-full font-bold" onclick="updateQty('${p.id}', ${qta - 1})">-</button>
                         <input type="number" value="${qta}" onchange="updateQty('${p.id}', this.value)" class="w-16 bg-transparent text-center text-xl font-bold text-white focus:outline-none">
-                        <span class="text-sm text-slate-500 font-medium">${p.unita}</span>
-                        <button class="bg-slate-700 hover:bg-slate-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold" onclick="updateQty('${p.id}', ${qta + 1})">+</button>
+                        <span class="text-sm text-slate-500 font-medium w-6">${p.unita}</span>
+                        <button class="bg-slate-700 hover:bg-slate-600 text-white w-8 h-8 rounded-full font-bold" onclick="updateQty('${p.id}', ${qta + 1})">+</button>
                     </div>
                 </div>
             `;
             els.invList.appendChild(card);
         });
-
         els.invTotal.textContent = formatMoney(totalVal);
     }
 
-    // --- LOGICA FOOD COST ---
     function renderFoodCostView() {
-        // Popola select se vuota
-        if (els.fcSelect.options.length <= 1) {
-             const sorted = [...state.products].sort((a,b) => a.nome.localeCompare(b.nome));
-             sorted.forEach(p => {
-                 const opt = document.createElement('option');
-                 opt.value = p.id;
-                 opt.textContent = `${p.nome} (${formatMoney(p.costo)}/${p.unita})`;
-                 els.fcSelect.appendChild(opt);
-             });
-        }
-        renderRecipeTable();
-    }
-
-    function addToRecipe() {
-        const pid = els.fcSelect.value;
-        const qty = parseFloat(els.fcInputQty.value);
-        if(!pid || isNaN(qty) || qty <= 0) return;
-
-        const product = state.products.find(p => p.id === pid);
-        if(!product) return;
-
-        // Calcolo costo di questa riga
-        // Se unita è kg e qty è 0.5 -> 0.5 * costo
-        // Nota: Assumiamo che l'input qty sia nella STESSA unità del prodotto per semplicità,
-        // oppure facciamo una conversione base se volessimo complicare. Qui: 1 to 1.
-        const lineCost = qty * parseFloat(product.costo);
-
-        state.recipeIngredients.push({
-            id: Date.now(), // ID temporaneo per la riga
-            name: product.nome,
-            qty: qty,
-            unit: product.unita,
-            cost: lineCost
+        // Popola select
+        els.fcSelect.innerHTML = '<option value="">Seleziona ingrediente...</option>';
+        state.products.sort((a,b)=>a.nome.localeCompare(b.nome)).forEach(p => {
+             const opt = document.createElement('option');
+             opt.value = p.id;
+             opt.textContent = `${p.nome} (${formatMoney(p.costo)}/${p.unita})`;
+             els.fcSelect.appendChild(opt);
         });
-
-        els.fcSelect.value = "";
-        els.fcInputQty.value = "";
         renderRecipeTable();
+        renderSavedRecipes();
     }
 
-    function renderRecipeTable() {
-        els.fcTableBody.innerHTML = '';
-        let totalCost = 0;
-
-        if (state.recipeIngredients.length === 0) {
-            els.fcEmpty.classList.remove('hidden');
-        } else {
-            els.fcEmpty.classList.add('hidden');
-            state.recipeIngredients.forEach((ing, index) => {
-                totalCost += ing.cost;
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="px-4 py-3 font-medium text-white">${ing.name}</td>
-                    <td class="px-4 py-3 text-right text-slate-300 font-mono">${ing.qty} ${ing.unit}</td>
-                    <td class="px-4 py-3 text-right text-slate-300 font-mono">${formatMoney(ing.cost)}</td>
-                    <td class="px-4 py-3 text-center">
-                        <button onclick="removeRecipeItem(${index})" class="text-red-400 hover:text-red-300">✕</button>
-                    </td>
-                `;
-                els.fcTableBody.appendChild(tr);
-            });
+    function renderSavedRecipes() {
+        els.savedRecipesList.innerHTML = '';
+        if(state.recipes.length === 0) {
+            document.getElementById('no-recipes-msg').classList.remove('hidden');
+            return;
         }
+        document.getElementById('no-recipes-msg').classList.add('hidden');
 
-        els.fcTotalCost.textContent = formatMoney(totalCost);
-        calculateMetrics(totalCost);
+        state.recipes.sort((a,b) => a.nome.localeCompare(b.nome)).forEach(dish => {
+            const div = document.createElement('div');
+            div.className = "bg-slate-900/50 p-4 rounded-xl border border-slate-700 flex justify-between items-center";
+            
+            const percent = (dish.costoTotale / dish.prezzoVendita) * 100;
+            let colorClass = percent < 28 ? "text-emerald-400" : (percent < 35 ? "text-amber-400" : "text-red-400");
+
+            div.innerHTML = `
+                <div>
+                    <h4 class="font-bold text-white text-lg">${dish.nome}</h4>
+                    <p class="text-xs text-slate-400">Food Cost: <span class="${colorClass} font-bold">${percent.toFixed(1)}%</span> • Margine: ${formatMoney(dish.margine)}</p>
+                </div>
+                <div class="text-right">
+                    <p class="font-bold text-white">${formatMoney(dish.prezzoVendita)}</p>
+                    <button class="text-xs text-red-500 hover:text-red-300 mt-1" onclick="deleteItem('${dish.id}', 'piatti')">Elimina</button>
+                </div>
+            `;
+            els.savedRecipesList.appendChild(div);
+        });
     }
 
-    function calculateMetrics(cost) {
-        const price = parseFloat(els.fcSellPrice.value) || 0;
-        
-        let percent = 0;
-        let margin = 0;
-
-        if (price > 0) {
-            percent = (cost / price) * 100;
-            margin = price - cost;
-            els.fcPercent.textContent = percent.toFixed(1) + "%";
-            els.fcMargin.textContent = formatMoney(margin);
-            
-            // Colore Barra e Testo
-            els.fcPercentBar.style.width = Math.min(percent, 100) + "%";
-            
-            if(percent < 25) {
-                els.fcPercentBar.className = "h-2.5 rounded-full bg-emerald-500 transition-all duration-500";
-                els.fcStatus.textContent = "Margine Eccellente";
-                els.fcStatus.className = "text-xs text-right mt-1 text-emerald-400";
-            } else if (percent < 35) {
-                els.fcPercentBar.className = "h-2.5 rounded-full bg-amber-500 transition-all duration-500";
-                 els.fcStatus.textContent = "Margine Buono";
-                 els.fcStatus.className = "text-xs text-right mt-1 text-amber-400";
-            } else {
-                els.fcPercentBar.className = "h-2.5 rounded-full bg-red-500 transition-all duration-500";
-                els.fcStatus.textContent = "Attenzione: Costi Alti";
-                els.fcStatus.className = "text-xs text-right mt-1 text-red-400";
-            }
-        } else {
-            els.fcPercent.textContent = "0%";
-            els.fcPercentBar.style.width = "0%";
-            els.fcMargin.textContent = "€ 0,00";
-            els.fcStatus.textContent = "Inserisci prezzo vendita";
-        }
-    }
-
-    // --- LOGICA CANTINA (Accordion) ---
     function renderWines() {
         els.wineList.innerHTML = '';
         const term = els.searchWine.value.toLowerCase();
         
-        const filtered = state.vini.filter(v => 
-            v.nome.toLowerCase().includes(term) || 
-            (v.cantina && v.cantina.toLowerCase().includes(term))
-        );
+        const filtered = state.vini.filter(v => v.nome.toLowerCase().includes(term) || (v.cantina && v.cantina.toLowerCase().includes(term)));
+        if(filtered.length === 0) document.getElementById('no-wines-message').classList.remove('hidden');
+        else document.getElementById('no-wines-message').classList.add('hidden');
 
-        if(filtered.length === 0) {
-            document.getElementById('no-wines-message').classList.remove('hidden');
-            return;
-        }
-        document.getElementById('no-wines-message').classList.add('hidden');
-
-        // Raggruppa per Regione
         const grouped = filtered.reduce((acc, v) => {
             const reg = v.regione || 'Altro';
             if(!acc[reg]) acc[reg] = [];
@@ -631,8 +463,6 @@
         Object.keys(grouped).sort().forEach(reg => {
             const groupDiv = document.createElement('div');
             groupDiv.className = "bg-slate-800 border border-slate-700 rounded-xl overflow-hidden";
-            
-            // Header Accordion
             groupDiv.innerHTML = `
                 <button class="w-full px-6 py-4 flex justify-between items-center bg-slate-800 hover:bg-slate-750 transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">
                     <span class="font-bold text-lg text-purple-400">${reg}</span>
@@ -647,52 +477,65 @@
     }
 
     function createWineCardHTML(v) {
+        // NOTA: Qui inseriamo INPUT per costo e vendita per modifica diretta
         return `
-            <div class="bg-slate-800 border border-slate-700 p-4 rounded-lg relative">
-                 <button class="absolute top-2 right-2 text-slate-500 hover:text-red-400" onclick="deleteItem('${v.id}', 'vini')">✕</button>
-                 <h4 class="font-bold text-white">${v.nome} <span class="text-slate-500 font-normal">${v.anno}</span></h4>
-                 <p class="text-sm text-slate-400 italic mb-2">${v.cantina}</p>
-                 <div class="flex justify-between items-end">
+            <div class="bg-slate-800 border border-slate-700 p-4 rounded-lg relative group">
+                 <button class="absolute top-2 right-2 text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity" onclick="deleteItem('${v.id}', 'vini')">✕</button>
+                 <h4 class="font-bold text-white text-lg">${v.nome} <span class="text-slate-500 font-normal text-sm">${v.anno}</span></h4>
+                 <p class="text-sm text-slate-400 italic mb-3">${v.cantina}</p>
+                 
+                 <div class="grid grid-cols-2 gap-3 mb-3">
                     <div>
-                        <p class="text-xs text-slate-500">Costo: €${v.costo}</p>
-                        <p class="text-xs text-slate-500">Vendita: €${v.vendita}</p>
+                        <label class="text-[10px] uppercase text-slate-500 font-bold">Costo</label>
+                        <input type="number" step="0.01" value="${v.costo}" onchange="updateWineField('${v.id}', 'costo', this.value)" class="w-full bg-slate-900 border border-slate-600 rounded px-2 py-1 text-sm text-white focus:border-purple-500 focus:outline-none">
                     </div>
+                    <div>
+                        <label class="text-[10px] uppercase text-slate-500 font-bold">Vendita</label>
+                        <input type="number" step="0.01" value="${v.vendita}" onchange="updateWineField('${v.id}', 'vendita', this.value)" class="w-full bg-slate-900 border border-slate-600 rounded px-2 py-1 text-sm text-white focus:border-purple-500 focus:outline-none">
+                    </div>
+                 </div>
+
+                 <div class="flex justify-between items-center border-t border-slate-700 pt-2">
+                    <span class="text-xs text-slate-500">Giacenza</span>
                     <div class="flex items-center gap-2">
-                        <button class="text-slate-400 hover:text-white bg-slate-700 rounded px-2" onclick="updateWineQty('${v.id}', ${parseInt(v.quantita)-1})">-</button>
-                        <span class="font-bold text-lg w-6 text-center">${v.quantita}</span>
-                        <button class="text-slate-400 hover:text-white bg-slate-700 rounded px-2" onclick="updateWineQty('${v.id}', ${parseInt(v.quantita)+1})">+</button>
+                        <button class="text-slate-400 hover:text-white bg-slate-700 rounded px-2" onclick="updateWineField('${v.id}', 'quantita', ${parseInt(v.quantita)-1})">-</button>
+                        <span class="font-bold text-white w-6 text-center">${v.quantita}</span>
+                        <button class="text-slate-400 hover:text-white bg-slate-700 rounded px-2" onclick="updateWineField('${v.id}', 'quantita', ${parseInt(v.quantita)+1})">+</button>
                     </div>
                  </div>
             </div>
         `;
     }
 
-    // --- HELPER FUNCTIONS ---
-    function formatMoney(val) {
-        return new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(val || 0);
-    }
-
+    // --- ACTIONS & EVENTS ---
     function setupEvents() {
         // Navigazione
-        els.navInv.onclick = () => { state.view = 'inventario'; render(); };
-        els.navFood.onclick = () => { state.view = 'foodcost'; render(); };
-        els.navVin.onclick = () => { state.view = 'cantina'; render(); };
-        
-        // Ricerca
+        const setView = (v) => { state.view = v; els.views.inv.classList.add('hidden'); els.views.food.classList.add('hidden'); els.views.vin.classList.add('hidden'); if(v==='inventario') {els.views.inv.classList.remove('hidden'); renderInventory();} if(v==='foodcost') {els.views.food.classList.remove('hidden'); renderFoodCostView();} if(v==='cantina') {els.views.vin.classList.remove('hidden'); renderWines();} updateFab(v); };
+        els.navInv.onclick = () => setView('inventario');
+        els.navFood.onclick = () => setView('foodcost');
+        els.navVin.onclick = () => setView('cantina');
+
+        // Search
         els.searchInv.oninput = renderInventory;
         els.searchWine.oninput = renderWines;
 
-        // Modale Prodotti
+        // Modals
         els.fab.onclick = () => {
-            if(state.view === 'inventario') els.modalProd.el.classList.remove('hidden');
+            if(state.view === 'inventario') {
+                els.modalProd.title.innerText = "Nuovo Articolo";
+                els.modalProd.id.value = ""; // Reset ID (Create Mode)
+                els.modalProd.form.reset();
+                els.modalProd.el.classList.remove('hidden');
+            }
             if(state.view === 'cantina') els.modalWine.el.classList.remove('hidden');
         };
         els.modalProd.close.onclick = () => els.modalProd.el.classList.add('hidden');
         els.modalWine.close.onclick = () => els.modalWine.el.classList.add('hidden');
 
-        // Form Submit Prodotti
+        // FORM SUBMIT PRODOTTO (Gestisce CREATE e UPDATE)
         els.modalProd.form.onsubmit = async (e) => {
             e.preventDefault();
+            const id = els.modalProd.id.value;
             const data = {
                 nome: document.getElementById('inp-nome').value,
                 fornitore: document.getElementById('inp-fornitore').value,
@@ -701,13 +544,21 @@
                 resa: parseFloat(document.getElementById('inp-resa').value)||1,
                 quantita: parseFloat(document.getElementById('inp-quantita').value)||0,
             };
-            await addDoc(collection(db, "inventari", GRUPPO_ID, "prodotti"), data);
+
+            if(id) {
+                // UPDATE
+                await updateDoc(doc(db, "inventari", GRUPPO_ID, "prodotti", id), data);
+                showAlert("Aggiornato", `Prodotto ${data.nome} modificato.`);
+            } else {
+                // CREATE
+                await addDoc(collection(db, "inventari", GRUPPO_ID, "prodotti"), data);
+                showAlert("Creato", `Prodotto ${data.nome} aggiunto.`);
+            }
             els.modalProd.el.classList.add('hidden');
             els.modalProd.form.reset();
-            showAlert('Prodotto Aggiunto', 'Inventario aggiornato');
         };
 
-        // Form Submit Vini
+        // Submit Vino
         els.modalWine.form.onsubmit = async (e) => {
             e.preventDefault();
              const data = {
@@ -722,81 +573,112 @@
             await addDoc(collection(db, "inventari", GRUPPO_ID, "vini"), data);
             els.modalWine.el.classList.add('hidden');
             els.modalWine.form.reset();
-            showAlert('Vino Aggiunto', 'Cantina aggiornata');
         };
 
-        // Food Cost Buttons
-        els.fcAddBtn.onclick = addToRecipe;
-        els.fcSellPrice.oninput = () => calculateMetrics(parseFloat(els.fcTotalCost.textContent.replace(/[^\d,]/g, '').replace(',','.'))); // Quick hack to re-parse displayed cost
-        els.fcReset.onclick = () => {
-            state.recipeIngredients = [];
-            els.fcSellPrice.value = '';
+        // Food Cost Logic
+        els.fcAddBtn.onclick = () => {
+            const pid = els.fcSelect.value;
+            const qty = parseFloat(els.fcInputQty.value);
+            if(!pid || isNaN(qty)) return;
+            const p = state.products.find(x => x.id === pid);
+            // Costo = (CostoUnitario / Unita) * QtyUsata (Semplificato: si assume stessa unita o conversione mentale)
+            // Se il prodotto è al Kg, e uso 0.1 (100gr), costo è 0.1 * prezzoKg
+            state.recipeIngredients.push({name: p.nome, qty: qty, cost: qty * parseFloat(p.costo)});
             renderRecipeTable();
+            els.fcSelect.value = ""; els.fcInputQty.value = "";
+        };
+        els.fcResetBtn.onclick = () => { state.recipeIngredients = []; els.fcDishName.value=""; els.fcSellPrice.value=""; renderRecipeTable(); };
+        els.fcSellPrice.oninput = renderRecipeTable; // Ricalcola metriche
+        
+        // SAVE RECIPE
+        els.fcSaveBtn.onclick = async () => {
+            const name = els.fcDishName.value;
+            const sell = parseFloat(els.fcSellPrice.value);
+            const cost = parseFloat(els.fcTotalCost.innerText.replace(/[^\d,]/g,'').replace(',','.'));
+            
+            if(!name || isNaN(sell)) { alert("Inserisci nome e prezzo vendita"); return; }
+            
+            await addDoc(collection(db, "inventari", GRUPPO_ID, "piatti"), {
+                nome: name,
+                costoTotale: cost,
+                prezzoVendita: sell,
+                margine: sell - cost,
+                ingredienti: state.recipeIngredients, // Salviamo lo snapshot
+                data: new Date().toISOString()
+            });
+            showAlert("Salvato", "Piatto aggiunto al menu");
+            els.fcResetBtn.click();
         };
 
-        // PDF Vini
-        els.pdfBtn.onclick = generateWinePDF;
+        els.pdfBtn.onclick = () => {
+             const { jsPDF } = window.jspdf;
+             const doc = new jsPDF();
+             doc.text("Report Cantina", 14, 20);
+             const data = state.vini.map(v=>[v.nome, v.cantina, v.quantita, v.costo, v.vendita]);
+             doc.autoTable({ head: [['Nome','Cantina','Qtà','Costo','Vendita']], body: data, startY: 30 });
+             doc.save('vini.pdf');
+        };
+
+        // Global Helpers
+        window.openEditProduct = (id) => {
+            const p = state.products.find(x => x.id === id);
+            if(!p) return;
+            els.modalProd.title.innerText = "Modifica Articolo";
+            els.modalProd.id.value = id; // Set ID for Update Mode
+            document.getElementById('inp-nome').value = p.nome;
+            document.getElementById('inp-fornitore').value = p.fornitore;
+            document.getElementById('inp-unita').value = p.unita;
+            document.getElementById('inp-costo').value = p.costo;
+            document.getElementById('inp-resa').value = p.resa || 1;
+            document.getElementById('inp-quantita').value = p.quantita;
+            els.modalProd.el.classList.remove('hidden');
+        };
         
-        // Esposizione funzioni globali per onclick inline
+        window.updateWineField = async (id, field, val) => {
+            let v = parseFloat(val);
+            if(isNaN(v)) v = 0; // fallback
+            await updateDoc(doc(db, "inventari", GRUPPO_ID, "vini", id), { [field]: v });
+        };
+
         window.updateQty = async (id, val) => {
-            if(val < 0) val = 0;
+             if(val < 0) val = 0;
             await updateDoc(doc(db, "inventari", GRUPPO_ID, "prodotti", id), { quantita: parseFloat(val) });
         };
-        window.updateWineQty = async (id, val) => {
-             if(val < 0) val = 0;
-            await updateDoc(doc(db, "inventari", GRUPPO_ID, "vini", id), { quantita: parseInt(val) });
-        };
         window.deleteItem = async (id, coll) => {
-            if(confirm('Eliminare definitivamente?')) {
-                await deleteDoc(doc(db, "inventari", GRUPPO_ID, coll, id));
-            }
-        };
-        window.removeRecipeItem = (index) => {
-            state.recipeIngredients.splice(index, 1);
-            renderRecipeTable();
+            if(confirm('Eliminare?')) await deleteDoc(doc(db, "inventari", GRUPPO_ID, coll, id));
         };
     }
 
-    function showAlert(title, msg) {
-        const al = document.getElementById('custom-alert');
-        document.getElementById('custom-alert-title').innerText = title;
-        document.getElementById('custom-alert-message').innerText = msg;
-        al.classList.remove('hidden');
-        al.classList.add('bg-slate-800', 'border-amber-500', 'text-white');
-        setTimeout(() => al.classList.add('hidden'), 3000);
+    // Helpers
+    function renderRecipeTable() {
+        els.fcTableBody.innerHTML = '';
+        let tot = 0;
+        state.recipeIngredients.forEach(i => {
+            tot += i.cost;
+            els.fcTableBody.innerHTML += `<tr><td class="px-4 py-2">${i.name}</td><td class="px-4 py-2 text-right">${i.qty}</td><td class="px-4 py-2 text-right">${formatMoney(i.cost)}</td><td class="px-4 py-2"></td></tr>`;
+        });
+        els.fcTotalCost.innerText = formatMoney(tot);
+        const sell = parseFloat(els.fcSellPrice.value)||0;
+        if(sell > 0) {
+            const p = (tot/sell)*100;
+            els.fcPercent.innerText = p.toFixed(1)+'%';
+            els.fcPercentBar.style.width = Math.min(p,100)+'%';
+            els.fcPercentBar.className = `h-2 rounded-full transition-all ${p<30?'bg-emerald-500':(p<40?'bg-amber-500':'bg-red-500')}`;
+            els.fcMargin.innerText = formatMoney(sell - tot);
+        } else {
+            els.fcPercent.innerText = "0%"; els.fcPercentBar.style.width="0%"; els.fcMargin.innerText="€ 0,00";
+        }
     }
 
-    // PDF Generator
-    function generateWinePDF() {
-         const { jsPDF } = window.jspdf;
-         const doc = new jsPDF();
-         
-         doc.setFontSize(18);
-         doc.text("Report Cantina Vini", 14, 22);
-         
-         const data = state.vini.map(v => [
-             v.nome, 
-             v.cantina, 
-             v.anno, 
-             v.quantita, 
-             "€ " + v.costo, 
-             "€ " + v.vendita
-         ]);
-
-         doc.autoTable({
-             head: [['Vino', 'Cantina', 'Anno', 'Q.tà', 'Costo', 'Vendita']],
-             body: data,
-             startY: 30,
-             theme: 'grid',
-             styles: { fontSize: 9 }
-         });
-         
-         doc.save('cantina_report.pdf');
+    function formatMoney(v) { return new Intl.NumberFormat('it-IT', {style:'currency', currency:'EUR'}).format(v||0); }
+    function showAlert(t,m) { const a = document.getElementById('custom-alert'); document.getElementById('custom-alert-title').innerText=t; document.getElementById('custom-alert-message').innerText=m; a.classList.remove('hidden'); a.classList.add('bg-slate-800','border-amber-500','text-white'); setTimeout(()=>a.classList.add('hidden'),3000); }
+    function updateFab(v) { 
+        els.fab.style.display = (v === 'foodcost') ? 'none' : 'block';
+        if(v === 'cantina') els.fab.className = "fixed bottom-8 right-8 bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-full shadow-2xl transition-transform hover:scale-110 z-30";
+        else els.fab.className = "fixed bottom-8 right-8 bg-amber-500 hover:bg-amber-600 text-slate-900 p-4 rounded-full shadow-2xl transition-transform hover:scale-110 z-30";
     }
 
-    // Start
     init();
-
   </script>
 </body>
 </html>
